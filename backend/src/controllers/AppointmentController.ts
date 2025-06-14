@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { z } from 'zod';
 import { AppointmentService } from '../services/AppointmentService';
 import { AuthenticatedRequest } from '../types/auth';
@@ -56,7 +56,7 @@ export class AppointmentController {
    * POST /api/appointments
    * Criar novo agendamento
    */
-  async create(req: AuthenticatedRequest, res: Response) {
+  async create(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const validatedData = createAppointmentSchema.parse(req.body);
       
@@ -93,7 +93,7 @@ export class AppointmentController {
         startTime: new Date(validatedData.startTime)
       });
 
-      res.status(201).json(appointment);
+      return res.status(201).json(appointment);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -108,7 +108,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -118,12 +118,12 @@ export class AppointmentController {
    * GET /api/appointments
    * Listar agendamentos com filtros
    */
-  async findMany(req: AuthenticatedRequest, res: Response) {
+  async findMany(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const filters = appointmentFiltersSchema.parse(req.query);
 
       // Aplicar filtros baseados no role do usuário
-      let finalFilters = { ...filters };
+      let finalFilters: any = { ...filters };
 
       if (req.user.role === 'CLIENT') {
         finalFilters.clientId = req.user.userId;
@@ -145,7 +145,7 @@ export class AppointmentController {
 
       const result = await this.appointmentService.findMany(finalFilters);
 
-      res.json(result);
+      return res.json(result);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -154,7 +154,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -164,7 +164,7 @@ export class AppointmentController {
    * GET /api/appointments/:id
    * Buscar agendamento por ID
    */
-  async findById(req: AuthenticatedRequest, res: Response) {
+  async findById(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
@@ -195,9 +195,9 @@ export class AppointmentController {
         });
       }
 
-      res.json(appointment);
+      return res.json(appointment);
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -207,7 +207,7 @@ export class AppointmentController {
    * PUT /api/appointments/:id
    * Atualizar agendamento
    */
-  async update(req: AuthenticatedRequest, res: Response) {
+  async update(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
       const validatedData = updateAppointmentSchema.parse(req.body);
@@ -245,7 +245,7 @@ export class AppointmentController {
 
       const appointment = await this.appointmentService.update(id, updateData);
 
-      res.json(appointment);
+      return res.json(appointment);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -260,7 +260,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -270,7 +270,7 @@ export class AppointmentController {
    * DELETE /api/appointments/:id
    * Cancelar agendamento
    */
-  async cancel(req: AuthenticatedRequest, res: Response) {
+  async cancel(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
       const { reason } = cancelAppointmentSchema.parse(req.body);
@@ -304,7 +304,7 @@ export class AppointmentController {
 
       const appointment = await this.appointmentService.cancel(id, reason);
 
-      res.json(appointment);
+      return res.json(appointment);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -319,7 +319,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -329,7 +329,7 @@ export class AppointmentController {
    * PATCH /api/appointments/:id/confirm
    * Confirmar agendamento
    */
-  async confirm(req: AuthenticatedRequest, res: Response) {
+  async confirm(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
@@ -348,7 +348,7 @@ export class AppointmentController {
 
       const appointment = await this.appointmentService.confirm(id);
 
-      res.json(appointment);
+      return res.json(appointment);
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({
@@ -356,7 +356,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -366,7 +366,7 @@ export class AppointmentController {
    * PATCH /api/appointments/:id/start
    * Iniciar atendimento
    */
-  async startService(req: AuthenticatedRequest, res: Response) {
+  async startService(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
@@ -385,7 +385,7 @@ export class AppointmentController {
 
       const appointment = await this.appointmentService.startService(id);
 
-      res.json(appointment);
+      return res.json(appointment);
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({
@@ -393,7 +393,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -403,7 +403,7 @@ export class AppointmentController {
    * PATCH /api/appointments/:id/complete
    * Finalizar agendamento
    */
-  async complete(req: AuthenticatedRequest, res: Response) {
+  async complete(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
       const { notes } = completeAppointmentSchema.parse(req.body);
@@ -423,7 +423,7 @@ export class AppointmentController {
 
       const appointment = await this.appointmentService.complete(id, notes);
 
-      res.json(appointment);
+      return res.json(appointment);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -438,7 +438,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -448,7 +448,7 @@ export class AppointmentController {
    * PATCH /api/appointments/:id/no-show
    * Marcar como não compareceu
    */
-  async markNoShow(req: AuthenticatedRequest, res: Response) {
+  async markNoShow(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
@@ -467,7 +467,7 @@ export class AppointmentController {
 
       const appointment = await this.appointmentService.markNoShow(id);
 
-      res.json(appointment);
+      return res.json(appointment);
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({
@@ -475,7 +475,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -485,7 +485,7 @@ export class AppointmentController {
    * GET /api/appointments/available-slots
    * Buscar horários disponíveis
    */
-  async getAvailableSlots(req: AuthenticatedRequest, res: Response) {
+  async getAvailableSlots(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const validatedQuery = availableSlotsSchema.parse(req.query);
 
@@ -496,7 +496,7 @@ export class AppointmentController {
         validatedQuery.serviceDuration
       );
 
-      res.json(slots);
+      return res.json(slots);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -505,7 +505,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -515,12 +515,18 @@ export class AppointmentController {
    * GET /api/appointments/stats
    * Obter estatísticas de agendamentos
    */
-  async getStats(req: AuthenticatedRequest, res: Response) {
+  async getStats(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const filters = appointmentFiltersSchema.parse(req.query);
 
-      // Aplicar filtros baseados no role do usuário
-      let finalFilters = { ...filters };
+      // Aplicar filtros baseados no role do usuário e converter tipos
+      const finalFilters: any = {
+        barbershopId: filters.barbershopId,
+        barberId: filters.barberId,
+        clientId: filters.clientId,
+        serviceId: filters.serviceId,
+        status: filters.status
+      };
 
       if (req.user.role === 'CLIENT') {
         finalFilters.clientId = req.user.userId;
@@ -533,16 +539,16 @@ export class AppointmentController {
       // SUPER_ADMIN pode ver todas as estatísticas
 
       // Converter strings de data para Date
-      if (finalFilters.startDate) {
-        finalFilters.startDate = new Date(finalFilters.startDate);
+      if (filters.startDate) {
+        finalFilters.startDate = new Date(filters.startDate);
       }
-      if (finalFilters.endDate) {
-        finalFilters.endDate = new Date(finalFilters.endDate);
+      if (filters.endDate) {
+        finalFilters.endDate = new Date(filters.endDate);
       }
 
       const stats = await this.appointmentService.getStats(finalFilters);
 
-      res.json(stats);
+      return res.json(stats);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -551,7 +557,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -561,7 +567,7 @@ export class AppointmentController {
    * GET /api/appointments/barber/:barberId
    * Buscar agendamentos de um barbeiro específico
    */
-  async getByBarber(req: AuthenticatedRequest, res: Response) {
+  async getByBarber(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { barberId } = req.params;
       const filters = appointmentFiltersSchema.parse(req.query);
@@ -593,7 +599,7 @@ export class AppointmentController {
 
       const result = await this.appointmentService.findMany(finalFilters);
 
-      res.json(result);
+      return res.json(result);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -602,7 +608,7 @@ export class AppointmentController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }

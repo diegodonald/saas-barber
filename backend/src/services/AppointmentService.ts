@@ -1,5 +1,5 @@
 import { PrismaClient, Appointment, AppointmentStatus, Prisma } from '@prisma/client';
-import { addMinutes, format, parseISO, startOfDay, endOfDay, isAfter, isBefore, isEqual } from 'date-fns';
+import { addMinutes, format, startOfDay, endOfDay, isAfter, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export interface CreateAppointmentData {

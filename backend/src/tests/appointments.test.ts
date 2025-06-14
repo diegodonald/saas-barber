@@ -1,15 +1,15 @@
-import { PrismaClient, AppointmentStatus, Role, ExceptionType } from '@prisma/client';
+import { AppointmentStatus, Role } from '@prisma/client';
 import { AppointmentService } from '../services/AppointmentService';
 import { addMinutes, addDays, startOfDay } from 'date-fns';
+import { cleanDatabase, prisma } from './testUtils';
 
 describe('AppointmentService', () => {
-  let prisma: PrismaClient;
   let appointmentService: AppointmentService;
   let testBarbershopId: string;
   let testBarberId: string;
   let testClientId: string;
   let testServiceId: string;
-  let testBarberServiceId: string;
+
 
   // Helper para gerar data de segunda-feira
   function getNextMonday(): Date {
@@ -21,9 +21,11 @@ describe('AppointmentService', () => {
   }
 
   beforeAll(async () => {
-    prisma = new PrismaClient();
     appointmentService = new AppointmentService(prisma);
 
+    // Limpar banco antes de começar
+    await cleanDatabase();
+    
     // Criar dados de teste
     await setupTestData();
   });
@@ -35,10 +37,8 @@ describe('AppointmentService', () => {
   });
 
   beforeEach(async () => {
-    // Limpar agendamentos antes de cada teste
-    await prisma.appointment.deleteMany({
-      where: { barbershopId: testBarbershopId }
-    });
+    // Limpar apenas agendamentos antes de cada teste, preservando dados de setup
+    await prisma.appointment.deleteMany({});
   });
 
   async function setupTestData() {
@@ -116,14 +116,13 @@ describe('AppointmentService', () => {
     testServiceId = service.id;
 
     // Criar relacionamento barbeiro-serviço
-    const barberService = await prisma.barberService.create({
+    await prisma.barberService.create({
       data: {
         barberId: testBarberId,
         serviceId: testServiceId,
         customPrice: 30.00
       }
     });
-    testBarberServiceId = barberService.id;
 
     // Criar horário global da barbearia
     await prisma.globalSchedule.create({
@@ -151,17 +150,8 @@ describe('AppointmentService', () => {
   }
 
   async function cleanupTestData() {
+    // Limpar apenas agendamentos, preservando dados de teste
     await prisma.appointment.deleteMany({});
-    await prisma.barberException.deleteMany({});
-    await prisma.globalException.deleteMany({});
-    await prisma.barberSchedule.deleteMany({});
-    await prisma.globalSchedule.deleteMany({});
-    await prisma.barberService.deleteMany({});
-    await prisma.service.deleteMany({});
-    await prisma.client.deleteMany({});
-    await prisma.barber.deleteMany({});
-    await prisma.barbershop.deleteMany({});
-    await prisma.user.deleteMany({});
   }
 
   describe('create', () => {

@@ -1,51 +1,17 @@
 // Usando Jest para testes
 import request from 'supertest';
 import app from '../index';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { cleanDatabase, prisma } from './testUtils';
 
 describe('Authentication System', () => {
   beforeAll(async () => {
     // Limpar dados de teste antes de começar
-    // Primeiro deletar os clientes, depois os usuários
-    await prisma.client.deleteMany({
-      where: {
-        user: {
-          email: {
-            contains: 'test'
-          }
-        }
-      }
-    });
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          contains: 'test'
-        }
-      }
-    });
+    await cleanDatabase();
   });
 
   afterAll(async () => {
     // Limpar dados de teste após os testes
-    // Primeiro deletar os clientes, depois os usuários
-    await prisma.client.deleteMany({
-      where: {
-        user: {
-          email: {
-            contains: 'test'
-          }
-        }
-      }
-    });
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          contains: 'test'
-        }
-      }
-    });
+    await cleanDatabase();
     await prisma.$disconnect();
   });
 
