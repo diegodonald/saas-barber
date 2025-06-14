@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { PrismaClient } from '@prisma/client';
 import { BarberServiceService } from '../services/BarberServiceService';
-
-const prisma = new PrismaClient();
+import { cleanDatabase, prisma } from './testUtils';
 const barberServiceService = new BarberServiceService(prisma);
 
 // IDs de teste que serão criados
@@ -14,14 +12,31 @@ let testClientId: string;
 let testBarberServiceId: string;
 
 describe('BarberServiceService', () => {
+  beforeAll(async () => {
+    // Limpar banco antes de começar
+    await cleanDatabase();
+  });
+
   beforeEach(async () => {
     // Criar dados de teste
+    // Primeiro criar o owner
+    const ownerUser = await prisma.user.create({
+      data: {
+        name: 'Dono da Barbearia',
+        email: 'dono@barbearia.com',
+        phone: '11999999998',
+        password: 'hashedpassword',
+        role: 'ADMIN'
+      }
+    });
+
     const barbershop = await prisma.barbershop.create({
       data: {
         name: 'Barbearia Teste',
         email: 'teste@barbearia.com',
         phone: '11999999999',
-        address: 'Rua Teste, 123'
+        address: 'Rua Teste, 123',
+        ownerId: ownerUser.id
       }
     });
     testBarbershopId = barbershop.id;
@@ -41,8 +56,6 @@ describe('BarberServiceService', () => {
       data: {
         userId: testUserId,
         barbershopId: testBarbershopId,
-        name: 'João Barbeiro',
-        phone: '11888888888',
         specialties: ['Corte', 'Barba']
       }
     });
@@ -73,13 +86,12 @@ describe('BarberServiceService', () => {
   });
 
   afterEach(async () => {
-    // Limpar dados de teste na ordem correta
-    await prisma.barberService.deleteMany({});
-    await prisma.appointment.deleteMany({});
-    await prisma.barber.deleteMany({});
-    await prisma.service.deleteMany({});
-    await prisma.barbershop.deleteMany({});
-    await prisma.user.deleteMany({});
+    // Limpar dados de teste na ordem correta (respeitando foreign keys)
+    await cleanDatabase();
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
   });
 
   describe('create', () => {
@@ -131,12 +143,23 @@ describe('BarberServiceService', () => {
 
     it('deve falhar se barbeiro e serviço não pertencem à mesma barbearia', async () => {
       // Criar outro barbershop e service
+      const otherOwner = await prisma.user.create({
+        data: {
+          name: 'Outro Dono',
+          email: 'outro@dono.com',
+          phone: '11999999997',
+          password: 'hashedpassword',
+          role: 'ADMIN'
+        }
+      });
+
       const otherBarbershop = await prisma.barbershop.create({
         data: {
           name: 'Outra Barbearia',
           email: 'outra@barbearia.com',
           phone: '11999999998',
-          address: 'Rua Outra, 456'
+          address: 'Rua Outra, 456',
+          ownerId: otherOwner.id
         }
       });
 
@@ -170,7 +193,7 @@ describe('BarberServiceService', () => {
 
       await barberServiceService.create(data);
 
-      await expect(barberServiceService.create(data)).rejects.toThrow('Barbeiro já possui este serviço atribuído');
+      await expect(barberServiceService.create(data)).rejects.toThrow('Barbeiro já está atribuído a este serviço');
     });
 
     it('deve falhar com preço customizado negativo', async () => {
@@ -357,8 +380,11 @@ describe('BarberServiceService', () => {
     });
 
     it('deve incluir serviços inativos quando solicitado', async () => {
+      // Primeiro buscar os serviços ativos
+      const activeServices = await barberServiceService.findServicesByBarber(testBarberId, false);
+      
       // Desativar a atribuição
-      await barberServiceService.update(result[0].id, { isActive: false });
+      await barberServiceService.update(activeServices[0].id, { isActive: false });
 
       const result = await barberServiceService.findServicesByBarber(testBarberId, true);
 
@@ -381,8 +407,7 @@ describe('BarberServiceService', () => {
         data: {
           userId: otherUser.id,
           barbershopId: testBarbershopId,
-          name: 'Outro Barbeiro',
-          phone: '11777777778'
+          specialties: ['Corte']
         }
       });
 
@@ -481,7 +506,7 @@ describe('BarberServiceService', () => {
 
       await expect(
         barberServiceService.delete(testBarberServiceId)
-      ).rejects.toThrow(/Não é possível remover: existem .* agendamento/);
+      ).rejects.toThrow('Não é possível remover atribuição com agendamentos futuros');
     });
 
     it('deve falhar com ID inexistente', async () => {
@@ -524,7 +549,7 @@ describe('BarberServiceService', () => {
 
       await expect(
         barberServiceService.reactivate(testBarberServiceId)
-      ).rejects.toThrow('Não é possível reativar: serviço está inativo');
+      ).rejects.toThrow('Não é possível reativar atribuição de serviço inativo');
     });
   });
 

@@ -9,7 +9,7 @@ export interface CreateBarberServiceData {
 }
 
 export interface UpdateBarberServiceData {
-  customPrice?: number;
+  customPrice?: number | null;
   isActive?: boolean;
 }
 
@@ -45,9 +45,12 @@ export interface BarberServiceStats {
 export interface BarberServiceWithDetails extends BarberService {
   barber: {
     id: string;
-    name: string;
-    phone: string;
     barbershopId: string;
+    user: {
+      id: string;
+      name: string;
+      phone: string | null;
+    };
   };
   service: {
     id: string;
@@ -65,61 +68,67 @@ export class BarberServiceService {
   constructor(private prisma: PrismaClient) {}
 
   /**
+   * Helper para converter resultado do Prisma para BarberServiceWithDetails
+   */
+  private convertToDetails(barberService: any): BarberServiceWithDetails {
+    return {
+      ...barberService,
+      service: {
+        ...barberService.service,
+        price: Number(barberService.service.price)
+      },
+      effectivePrice: Number(barberService.customPrice || barberService.service.price)
+    };
+  }
+
+  /**
    * Criar nova atribuição de serviço para barbeiro
    */
   async create(data: CreateBarberServiceData): Promise<BarberServiceWithDetails> {
-    // Validar se barbeiro existe e pertence à mesma barbearia do serviço
-    const [barber, service] = await Promise.all([
-      this.prisma.barber.findUnique({
-        where: { id: data.barberId },
-        include: { user: true }
-      }),
-      this.prisma.service.findUnique({
-        where: { id: data.serviceId }
-      })
-    ]);
+    // Verificar se barbeiro existe
+    const barber = await this.prisma.barber.findUnique({
+      where: { id: data.barberId },
+      include: { user: true }
+    });
 
     if (!barber) {
       throw new Error('Barbeiro não encontrado');
     }
 
+    // Verificar se serviço existe
+    const service = await this.prisma.service.findUnique({
+      where: { id: data.serviceId }
+    });
+
     if (!service) {
       throw new Error('Serviço não encontrado');
     }
 
-    if (!service.isActive) {
-      throw new Error('Não é possível atribuir serviço inativo');
-    }
-
+    // Verificar se barbeiro e serviço pertencem à mesma barbearia
     if (barber.barbershopId !== service.barbershopId) {
       throw new Error('Barbeiro e serviço devem pertencer à mesma barbearia');
     }
 
-    // Verificar se já existe esta atribuição
-    const existingAssignment = await this.prisma.barberService.findUnique({
+    // Verificar se atribuição já existe
+    const existingAssignment = await this.prisma.barberService.findFirst({
       where: {
-        barberId_serviceId: {
-          barberId: data.barberId,
-          serviceId: data.serviceId
-        }
+        barberId: data.barberId,
+        serviceId: data.serviceId
       }
     });
 
     if (existingAssignment) {
-      throw new Error('Barbeiro já possui este serviço atribuído');
+      throw new Error('Barbeiro já está atribuído a este serviço');
     }
 
     // Validar preço customizado se fornecido
-    if (data.customPrice !== undefined) {
+    if (data.customPrice !== undefined && data.customPrice !== null) {
       if (data.customPrice < 0) {
         throw new Error('Preço customizado não pode ser negativo');
       }
 
-      // Verificar se preço não é muito diferente do padrão (regra de negócio)
       const basePrice = Number(service.price);
-      const customPrice = data.customPrice;
-      
-      if (customPrice > basePrice * 3) {
+      if (data.customPrice > basePrice * 3) {
         throw new Error('Preço customizado não pode ser mais que 3x o preço base');
       }
     }
@@ -136,9 +145,14 @@ export class BarberServiceService {
         barber: {
           select: {
             id: true,
-            name: true,
-            phone: true,
-            barbershopId: true
+            barbershopId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            }
           }
         },
         service: {
@@ -155,97 +169,59 @@ export class BarberServiceService {
       }
     });
 
-    return {
-      ...barberService,
-      effectivePrice: Number(barberService.customPrice || barberService.service.price)
-    };
+    return this.convertToDetails(barberService);
   }
 
   /**
-   * Buscar atribuições com filtros avançados
+   * Listar atribuições com filtros
    */
   async findMany(filters: BarberServiceFilters = {}) {
+    // Construir where clause
     const where: Prisma.BarberServiceWhereInput = {};
 
-    // Filtros básicos
-    if (filters.barberId) where.barberId = filters.barberId;
-    if (filters.serviceId) where.serviceId = filters.serviceId;
-    if (filters.isActive !== undefined) where.isActive = filters.isActive;
+    if (filters.barberId) {
+      where.barberId = filters.barberId;
+    }
 
-    // Filtro por barbearia
+    if (filters.serviceId) {
+      where.serviceId = filters.serviceId;
+    }
+
     if (filters.barbershopId) {
       where.barber = { barbershopId: filters.barbershopId };
     }
 
-    // Filtro por preço customizado
+    if (filters.isActive !== undefined) {
+      where.isActive = filters.isActive;
+    }
+
     if (filters.hasCustomPrice !== undefined) {
       where.customPrice = filters.hasCustomPrice ? { not: null } : null;
     }
 
-    // Filtros de preço (considerando preço customizado ou padrão)
-    if (filters.minPrice || filters.maxPrice) {
-      const priceConditions: Prisma.BarberServiceWhereInput[] = [];
-      
-      // Condições para preço customizado
-      if (filters.minPrice && filters.maxPrice) {
-        priceConditions.push({
-          AND: [
-            { customPrice: { not: null } },
-            { customPrice: { gte: new Prisma.Decimal(filters.minPrice) } },
-            { customPrice: { lte: new Prisma.Decimal(filters.maxPrice) } }
-          ]
-        });
-        priceConditions.push({
-          AND: [
-            { customPrice: null },
-            { service: { price: { gte: new Prisma.Decimal(filters.minPrice) } } },
-            { service: { price: { lte: new Prisma.Decimal(filters.maxPrice) } } }
-          ]
-        });
-      } else if (filters.minPrice) {
-        priceConditions.push({
-          OR: [
-            { customPrice: { gte: new Prisma.Decimal(filters.minPrice) } },
-            { 
-              AND: [
-                { customPrice: null },
-                { service: { price: { gte: new Prisma.Decimal(filters.minPrice) } } }
-              ]
-            }
-          ]
-        });
-      } else if (filters.maxPrice) {
-        priceConditions.push({
-          OR: [
-            { customPrice: { lte: new Prisma.Decimal(filters.maxPrice) } },
-            { 
-              AND: [
-                { customPrice: null },
-                { service: { price: { lte: new Prisma.Decimal(filters.maxPrice) } } }
-              ]
-            }
-          ]
-        });
-      }
-
-      if (priceConditions.length > 0) {
-        where.OR = priceConditions;
-      }
-    }
-
-    // Filtro por categoria
     if (filters.category) {
-      where.service = { 
-        ...where.service,
-        category: filters.category 
-      };
+      where.service = { category: filters.category };
     }
 
-    // Configurar ordenação
+    if (filters.minPrice || filters.maxPrice) {
+      const priceFilter: any = {};
+      if (filters.minPrice) priceFilter.gte = new Prisma.Decimal(filters.minPrice);
+      if (filters.maxPrice) priceFilter.lte = new Prisma.Decimal(filters.maxPrice);
+      
+      where.OR = [
+        { customPrice: priceFilter },
+        { 
+          customPrice: null,
+          service: { price: priceFilter }
+        }
+      ];
+    }
+
+    // Construir orderBy
     let orderBy: Prisma.BarberServiceOrderByWithRelationInput = { createdAt: 'desc' };
-    
-    if (filters.orderBy) {
-      const direction = filters.orderDirection || 'asc';
+
+    if (filters.orderBy && filters.orderDirection) {
+      const direction = filters.orderDirection;
       
       switch (filters.orderBy) {
         case 'createdAt':
@@ -258,7 +234,7 @@ export class BarberServiceService {
           orderBy = { service: { name: direction } };
           break;
         case 'barberName':
-          orderBy = { barber: { name: direction } };
+          orderBy = { barber: { user: { name: direction } } };
           break;
       }
     }
@@ -271,9 +247,14 @@ export class BarberServiceService {
           barber: {
             select: {
               id: true,
-              name: true,
-              phone: true,
-              barbershopId: true
+              barbershopId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true
+                }
+              }
             }
           },
           service: {
@@ -295,11 +276,8 @@ export class BarberServiceService {
       this.prisma.barberService.count({ where })
     ]);
 
-    // Adicionar preço efetivo
-    const barberServicesWithDetails: BarberServiceWithDetails[] = barberServices.map(bs => ({
-      ...bs,
-      effectivePrice: Number(bs.customPrice || bs.service.price)
-    }));
+    // Converter resultados
+    const barberServicesWithDetails = barberServices.map(bs => this.convertToDetails(bs));
 
     return {
       data: barberServicesWithDetails,
@@ -319,9 +297,14 @@ export class BarberServiceService {
         barber: {
           select: {
             id: true,
-            name: true,
-            phone: true,
-            barbershopId: true
+            barbershopId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            }
           }
         },
         service: {
@@ -340,10 +323,7 @@ export class BarberServiceService {
 
     if (!barberService) return null;
 
-    return {
-      ...barberService,
-      effectivePrice: Number(barberService.customPrice || barberService.service.price)
-    };
+    return this.convertToDetails(barberService);
   }
 
   /**
@@ -366,9 +346,14 @@ export class BarberServiceService {
         barber: {
           select: {
             id: true,
-            name: true,
-            phone: true,
-            barbershopId: true
+            barbershopId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            }
           }
         },
         service: {
@@ -385,14 +370,11 @@ export class BarberServiceService {
       },
       orderBy: [
         { customPrice: 'asc' }, // Barbeiros com preço mais baixo primeiro
-        { barber: { name: 'asc' } }
+        { barber: { user: { name: 'asc' } } }
       ]
     });
 
-    return barberServices.map(bs => ({
-      ...bs,
-      effectivePrice: Number(bs.customPrice || bs.service.price)
-    }));
+    return barberServices.map(bs => this.convertToDetails(bs));
   }
 
   /**
@@ -414,9 +396,14 @@ export class BarberServiceService {
         barber: {
           select: {
             id: true,
-            name: true,
-            phone: true,
-            barbershopId: true
+            barbershopId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            }
           }
         },
         service: {
@@ -434,10 +421,7 @@ export class BarberServiceService {
       orderBy: { service: { name: 'asc' } }
     });
 
-    return barberServices.map(bs => ({
-      ...bs,
-      effectivePrice: Number(bs.customPrice || bs.service.price)
-    }));
+    return barberServices.map(bs => this.convertToDetails(bs));
   }
 
   /**
@@ -479,9 +463,14 @@ export class BarberServiceService {
         barber: {
           select: {
             id: true,
-            name: true,
-            phone: true,
-            barbershopId: true
+            barbershopId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            }
           }
         },
         service: {
@@ -498,39 +487,36 @@ export class BarberServiceService {
       }
     });
 
-    return {
-      ...barberService,
-      effectivePrice: Number(barberService.customPrice || barberService.service.price)
-    };
+    return this.convertToDetails(barberService);
   }
 
   /**
-   * Remover atribuição (soft delete - desativar)
+   * Deletar atribuição (soft delete)
    */
   async delete(id: string): Promise<void> {
-    const barberService = await this.prisma.barberService.findUnique({
+    const existingBarberService = await this.prisma.barberService.findUnique({
       where: { id }
     });
 
-    if (!barberService) {
+    if (!existingBarberService) {
       throw new Error('Atribuição não encontrada');
     }
 
-    // Verificar se existem agendamentos futuros com esta atribuição
+    // Verificar se há agendamentos futuros
     const futureAppointments = await this.prisma.appointment.count({
       where: {
-        barberId: barberService.barberId,
-        serviceId: barberService.serviceId,
+        barberId: existingBarberService.barberId,
+        serviceId: existingBarberService.serviceId,
         startTime: { gte: new Date() },
         status: { in: ['SCHEDULED', 'CONFIRMED'] }
       }
     });
 
     if (futureAppointments > 0) {
-      throw new Error(`Não é possível remover: existem ${futureAppointments} agendamento(s) futuro(s) com esta atribuição`);
+      throw new Error('Não é possível remover atribuição com agendamentos futuros');
     }
 
-    // Soft delete - apenas desativar
+    // Soft delete - marcar como inativo
     await this.prisma.barberService.update({
       where: { id },
       data: { isActive: false }
@@ -541,29 +527,35 @@ export class BarberServiceService {
    * Reativar atribuição
    */
   async reactivate(id: string): Promise<BarberServiceWithDetails> {
-    const barberService = await this.prisma.barberService.findUnique({
+    const existingBarberService = await this.prisma.barberService.findUnique({
       where: { id },
-      include: { service: true }
+      include: { service: true, barber: true }
     });
 
-    if (!barberService) {
+    if (!existingBarberService) {
       throw new Error('Atribuição não encontrada');
     }
 
-    if (!barberService.service.isActive) {
-      throw new Error('Não é possível reativar: serviço está inativo');
+    // Verificar se serviço ainda está ativo
+    if (!existingBarberService.service.isActive) {
+      throw new Error('Não é possível reativar atribuição de serviço inativo');
     }
 
-    const reactivated = await this.prisma.barberService.update({
+    const barberService = await this.prisma.barberService.update({
       where: { id },
       data: { isActive: true },
       include: {
         barber: {
           select: {
             id: true,
-            name: true,
-            phone: true,
-            barbershopId: true
+            barbershopId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            }
           }
         },
         service: {
@@ -580,10 +572,7 @@ export class BarberServiceService {
       }
     });
 
-    return {
-      ...reactivated,
-      effectivePrice: Number(reactivated.customPrice || reactivated.service.price)
-    };
+    return this.convertToDetails(barberService);
   }
 
   /**
@@ -602,24 +591,28 @@ export class BarberServiceService {
       inactive,
       withCustomPrice,
       withoutCustomPrice,
-      avgCustomPriceResult,
       totalServices,
-      totalBarbers
+      totalBarbers,
+      avgCustomPriceResult
     ] = await Promise.all([
       this.prisma.barberService.count({ where }),
       this.prisma.barberService.count({ where: { ...where, isActive: true } }),
       this.prisma.barberService.count({ where: { ...where, isActive: false } }),
       this.prisma.barberService.count({ where: { ...where, customPrice: { not: null } } }),
       this.prisma.barberService.count({ where: { ...where, customPrice: null } }),
+      this.prisma.barberService.groupBy({
+        by: ['serviceId'],
+        where,
+        _count: { serviceId: true }
+      }),
+      this.prisma.barberService.groupBy({
+        by: ['barberId'],
+        where,
+        _count: { barberId: true }
+      }),
       this.prisma.barberService.aggregate({
         where: { ...where, customPrice: { not: null } },
         _avg: { customPrice: true }
-      }),
-      this.prisma.service.count({
-        where: barbershopId ? { barbershopId } : {}
-      }),
-      this.prisma.barber.count({
-        where: barbershopId ? { barbershopId } : {}
       })
     ]);
 
@@ -629,8 +622,8 @@ export class BarberServiceService {
       inactive,
       withCustomPrice,
       withoutCustomPrice,
-      totalServices,
-      totalBarbers,
+      totalServices: totalServices.length,
+      totalBarbers: totalBarbers.length,
       avgCustomPrice: Number(avgCustomPriceResult._avg.customPrice || 0)
     };
   }
@@ -639,37 +632,33 @@ export class BarberServiceService {
    * Verificar se barbeiro pode executar serviço
    */
   async canBarberPerformService(barberId: string, serviceId: string): Promise<boolean> {
-    const barberService = await this.prisma.barberService.findUnique({
+    const assignment = await this.prisma.barberService.findFirst({
       where: {
-        barberId_serviceId: {
-          barberId,
-          serviceId
-        }
-      },
-      include: { service: true }
+        barberId,
+        serviceId,
+        isActive: true,
+        service: { isActive: true }
+      }
     });
 
-    return !!(barberService && barberService.isActive && barberService.service.isActive);
+    return !!assignment;
   }
 
   /**
    * Obter preço efetivo para barbeiro e serviço
    */
   async getEffectivePrice(barberId: string, serviceId: string): Promise<number | null> {
-    const barberService = await this.prisma.barberService.findUnique({
+    const assignment = await this.prisma.barberService.findFirst({
       where: {
-        barberId_serviceId: {
-          barberId,
-          serviceId
-        }
+        barberId,
+        serviceId,
+        isActive: true
       },
       include: { service: true }
     });
 
-    if (!barberService || !barberService.isActive || !barberService.service.isActive) {
-      return null;
-    }
+    if (!assignment) return null;
 
-    return Number(barberService.customPrice || barberService.service.price);
+    return Number(assignment.customPrice || assignment.service.price);
   }
 } 

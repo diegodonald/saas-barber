@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { z } from 'zod';
 import { BarberServiceService } from '../services/BarberServiceService';
 import { AuthenticatedRequest } from '../types/auth';
@@ -38,7 +38,7 @@ export class BarberServiceController {
    * POST /api/barber-services
    * Atribuir serviço a barbeiro
    */
-  async create(req: AuthenticatedRequest, res: Response) {
+  async create(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const validatedData = createBarberServiceSchema.parse(req.body);
 
@@ -61,7 +61,7 @@ export class BarberServiceController {
 
       const barberService = await this.barberServiceService.create(validatedData);
 
-      res.status(201).json(barberService);
+      return res.status(201).json(barberService);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -76,7 +76,7 @@ export class BarberServiceController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -86,7 +86,7 @@ export class BarberServiceController {
    * GET /api/barber-services
    * Listar atribuições com filtros
    */
-  async findMany(req: AuthenticatedRequest, res: Response) {
+  async findMany(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const filters = barberServiceFiltersSchema.parse(req.query);
 
@@ -104,7 +104,7 @@ export class BarberServiceController {
 
       const result = await this.barberServiceService.findMany(finalFilters);
 
-      res.json(result);
+      return res.json(result);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -113,7 +113,7 @@ export class BarberServiceController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -123,7 +123,7 @@ export class BarberServiceController {
    * GET /api/barber-services/:id
    * Buscar atribuição por ID
    */
-  async findById(req: AuthenticatedRequest, res: Response) {
+  async findById(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
@@ -153,9 +153,9 @@ export class BarberServiceController {
         });
       }
 
-      res.json(barberService);
+      return res.json(barberService);
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -165,7 +165,7 @@ export class BarberServiceController {
    * PUT /api/barber-services/:id
    * Atualizar atribuição
    */
-  async update(req: AuthenticatedRequest, res: Response) {
+  async update(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
       const validatedData = updateBarberServiceSchema.parse(req.body);
@@ -198,7 +198,7 @@ export class BarberServiceController {
 
       const barberService = await this.barberServiceService.update(id, validatedData);
 
-      res.json(barberService);
+      return res.json(barberService);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -213,7 +213,7 @@ export class BarberServiceController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -223,7 +223,7 @@ export class BarberServiceController {
    * DELETE /api/barber-services/:id
    * Remover atribuição (soft delete)
    */
-  async delete(req: AuthenticatedRequest, res: Response) {
+  async delete(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
@@ -255,7 +255,7 @@ export class BarberServiceController {
 
       await this.barberServiceService.delete(id);
 
-      res.status(204).send();
+      return res.status(204).send();
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({
@@ -263,7 +263,7 @@ export class BarberServiceController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -273,7 +273,7 @@ export class BarberServiceController {
    * PATCH /api/barber-services/:id/reactivate
    * Reativar atribuição
    */
-  async reactivate(req: AuthenticatedRequest, res: Response) {
+  async reactivate(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
@@ -305,7 +305,7 @@ export class BarberServiceController {
 
       const barberService = await this.barberServiceService.reactivate(id);
 
-      res.json(barberService);
+      return res.json(barberService);
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({
@@ -313,7 +313,7 @@ export class BarberServiceController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -323,7 +323,7 @@ export class BarberServiceController {
    * GET /api/barber-services/barber/:barberId
    * Buscar serviços de um barbeiro
    */
-  async findServicesByBarber(req: AuthenticatedRequest, res: Response) {
+  async findServicesByBarber(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { barberId } = req.params;
       const includeInactive = req.query.includeInactive === 'true';
@@ -358,9 +358,9 @@ export class BarberServiceController {
 
       const barberServices = await this.barberServiceService.findServicesByBarber(barberId, includeInactive);
 
-      res.json(barberServices);
+      return res.json(barberServices);
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -370,7 +370,7 @@ export class BarberServiceController {
    * GET /api/barber-services/service/:serviceId
    * Buscar barbeiros que executam um serviço
    */
-  async findBarbersByService(req: AuthenticatedRequest, res: Response) {
+  async findBarbersByService(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { serviceId } = req.params;
       const barbershopId = req.query.barbershopId as string;
@@ -384,14 +384,14 @@ export class BarberServiceController {
       // Para ADMINs, forçar filtro por barbearia
       let finalBarbershopId = barbershopId;
       if (req.user.role === 'ADMIN') {
-        finalBarbershopId = req.user.barbershopId;
+        finalBarbershopId = req.user.barbershopId!;
       }
 
       const barberServices = await this.barberServiceService.findBarbersByService(serviceId, finalBarbershopId);
 
-      res.json(barberServices);
+      return res.json(barberServices);
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -401,7 +401,7 @@ export class BarberServiceController {
    * GET /api/barber-services/stats
    * Obter estatísticas de atribuições
    */
-  async getStats(req: AuthenticatedRequest, res: Response) {
+  async getStats(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       let barbershopId: string | undefined;
 
@@ -410,7 +410,7 @@ export class BarberServiceController {
         barbershopId = req.user.barbershopId;
       } else if (req.user.role === 'BARBER') {
         // Barbeiros só veem estatísticas da própria barbearia
-        const barberServices = await this.barberServiceService.findServicesByBarber(req.user.barberId, false);
+        const barberServices = await this.barberServiceService.findServicesByBarber(req.user.barberId!, false);
         if (barberServices.length > 0) {
           barbershopId = barberServices[0].barber.barbershopId;
         }
@@ -418,9 +418,9 @@ export class BarberServiceController {
 
       const stats = await this.barberServiceService.getStats(barbershopId);
 
-      res.json(stats);
+      return res.json(stats);
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -430,7 +430,7 @@ export class BarberServiceController {
    * GET /api/barber-services/check/:barberId/:serviceId
    * Verificar se barbeiro pode executar serviço
    */
-  async checkCanPerformService(req: AuthenticatedRequest, res: Response) {
+  async checkCanPerformService(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { barberId, serviceId } = req.params;
 
@@ -445,12 +445,12 @@ export class BarberServiceController {
         this.barberServiceService.getEffectivePrice(barberId, serviceId)
       ]);
 
-      res.json({
+      return res.json({
         canPerform,
         effectivePrice
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
@@ -460,7 +460,7 @@ export class BarberServiceController {
    * GET /api/barber-services/available/:serviceId
    * Buscar barbeiros disponíveis para um serviço (público - para agendamento)
    */
-  async getAvailableBarbers(req: AuthenticatedRequest, res: Response) {
+  async getAvailableBarbers(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { serviceId } = req.params;
       const barbershopId = req.query.barbershopId as string;
@@ -482,8 +482,8 @@ export class BarberServiceController {
       // Retornar apenas informações essenciais para o cliente
       const publicBarbers = availableBarbers.map(bs => ({
         barberId: bs.barberId,
-        barberName: bs.barber.name,
-        barberPhone: bs.barber.phone,
+        barberName: bs.barber.user.name,
+        barberPhone: bs.barber.user.phone,
         serviceId: bs.serviceId,
         serviceName: bs.service.name,
         serviceDuration: bs.service.duration,
@@ -491,9 +491,9 @@ export class BarberServiceController {
         hasCustomPrice: !!bs.customPrice
       }));
 
-      res.json(publicBarbers);
+      return res.json(publicBarbers);
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor'
       });
     }
