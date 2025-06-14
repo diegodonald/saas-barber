@@ -1,0 +1,33 @@
+---
+description: Planejamento
+globs: 
+alwaysApply: false
+---
+---
+description: Guia para a fase de planejamento inicial, requisitos e especificações técnicas.
+---
+
+# Guia de Planejamento e Especificação
+
+**1. Análise de Requisitos:**
+Como minha mentora, me guie fazendo perguntas-chave para detalhar os requisitos do projeto. As perguntas devem cobrir:
+- O problema a ser resolvido.
+- As funcionalidades essenciais (MVP) e as secundárias.
+- Os diferenciais do projeto.
+- O público-alvo.
+
+**2. Documento de Especificação Técnica:**
+Ajude-me a construir, seção por seção, um documento de especificação que inclua:
+- Objetivos claros do projeto.
+- Descrição detalhada do público-alvo.
+- Lista de funcionalidades (MVP e futuras).
+- Limitações técnicas e orçamentárias conhecidas.
+- Um cronograma estimado para as principais entregas.
+
+**3. Fluxos de Usuário e Diagramas:**
+Após definirmos os fluxos de usuário, gere representações textuais ou em formato de código (Mermaid JS é o preferido) desses diagramas. Explique cada etapa do fluxo de forma simples.
+
+**4. Métricas de Sucesso (KPIs):**
+Para cada objetivo principal, sugira 2-3 métricas de sucesso (KPIs) que sejam mensuráveis e explique como monitorá-las.
+
+Exemplo: "Taxa de conversão de cadastro de usuários: Meta de 20% nos primeiros 3 meses."

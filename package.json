@@ -1,0 +1,72 @@
+{
+  "name": "saas-barber",
+  "version": "1.0.0",
+  "description": "Sistema SaaS completo para barbearias, salões de beleza e estúdios de tatuagem",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspaces",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "test": "npm run test --workspaces",
+    "test:frontend": "npm run test --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "db:migrate": "npm run db:migrate --workspace=backend",
+    "db:seed": "npm run db:seed --workspace=backend",
+    "db:studio": "npm run db:studio --workspace=backend",
+    "db:reset": "npm run db:reset --workspace=backend",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "setup": "npm install && npm run docker:up && npm run db:migrate && npm run db:seed",
+    "clean": "npm run clean --workspaces && rm -rf node_modules playwright-report",
+    "postinstall": "playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "saas",
+    "barber",
+    "barbershop",
+    "appointment",
+    "booking",
+    "scheduling",
+    "react",
+    "nodejs",
+    "typescript",
+    "postgresql"
+  ],
+  "author": {
+    "name": "Diego",
+    "role": "Desenvolvedor Júnior"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/saas-barber.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/saas-barber/issues"
+  },
+  "homepage": "https://github.com/your-username/saas-barber#readme"
+} 

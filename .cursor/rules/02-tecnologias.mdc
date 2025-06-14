@@ -1,0 +1,22 @@
+---
+description: Tecnologias
+globs: 
+alwaysApply: false
+---
+---
+description: Guia para avaliação e recomendação de tecnologias (stack) para o projeto.
+---
+
+# Guia de Seleção de Tecnologias
+
+Para o projeto em questão, avalie e recomende as melhores tecnologias para cada parte da stack: **Frontend, Backend, Banco de Dados e Hospedagem.**
+
+Para cada tecnologia recomendada, forneça uma análise clara cobrindo os seguintes pontos:
+- **Adequação ao Projeto:** Por que esta tecnologia é a escolha certa para os requisitos definidos?
+- **Facilidade de Manutenção:** Como a escolha impacta a manutenção e evolução do projeto a longo prazo?
+- **Performance e Escalabilidade:** A tecnologia suporta o crescimento esperado do projeto?
+- **Custo e Hospedagem:** Qual o custo inicial e estimado conforme o projeto cresce? Existem opções de hospedagem gratuitas ou baratas para o MVP?
+
+Apresente 2 ou 3 stacks alternativas, com prós e contras, para que a decisão seja bem informada.
+
+Exemplo de Stack para MVP: "React (frontend), Node.js com Express (backend), PostgreSQL (banco de dados), Vercel/Render (hospedagem). Custo inicial: ~$0."

@@ -1,0 +1,286 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(CLIENT)
+  name      String
+  phone     String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  barbershop    Barbershop? @relation("BarbershopOwner")
+  barberProfile Barber?
+  clientProfile Client?
+  appointments  Appointment[]
+
+  @@map("users")
+}
+
+model Barbershop {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  address     String
+  phone       String
+  email       String
+  website     String?
+  logo        String?
+
+  // Configurações
+  timezone String @default("America/Sao_Paulo")
+  currency String @default("BRL")
+
+  // Relacionamentos
+  ownerId String @unique
+  owner   User   @relation("BarbershopOwner", fields: [ownerId], references: [id])
+
+  barbers      Barber[]
+  services     Service[]
+  appointments Appointment[]
+  schedules    GlobalSchedule[]
+  exceptions   GlobalException[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("barbershops")
+}
+
+model Barber {
+  id           String @id @default(cuid())
+  userId       String @unique
+  barbershopId String
+
+  // Informações profissionais
+  description String?
+  experience  Int? // anos de experiência
+  specialties String[] // especialidades
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Relacionamentos
+  user       User       @relation(fields: [userId], references: [id])
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id])
+
+  schedules    BarberSchedule[]
+  exceptions   BarberException[]
+  appointments Appointment[]
+  services     BarberService[] // serviços que executa
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("barbers")
+}
+
+model Client {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Informações adicionais
+  birthDate DateTime?
+  gender    Gender?
+  notes     String? // notas do barbeiro sobre o cliente
+
+  // Relacionamentos
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("clients")
+}
+
+model Service {
+  id           String  @id @default(cuid())
+  barbershopId String
+  name         String
+  description  String?
+  duration     Int // em minutos
+  price        Decimal @db.Decimal(10, 2) // preço base
+
+  // Configurações
+  isActive Boolean @default(true)
+  category String? // "Corte", "Barba", "Tratamento", etc.
+
+  // Relacionamentos
+  barbershop     Barbershop      @relation(fields: [barbershopId], references: [id])
+  appointments   Appointment[]
+  barberServices BarberService[] // barbeiros que executam
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("services")
+}
+
+// Relacionamento entre Barbeiro e Serviços
+model BarberService {
+  id        String @id @default(cuid())
+  barberId  String
+  serviceId String
+
+  // Configurações específicas
+  customPrice Decimal? @db.Decimal(10, 2) // preço específico do barbeiro
+  isActive    Boolean  @default(true)
+
+  // Relacionamentos
+  barber  Barber  @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([barberId, serviceId])
+  @@map("barber_services")
+}
+
+model Appointment {
+  id           String @id @default(cuid())
+  barbershopId String
+  barberId     String
+  clientId     String
+  serviceId    String
+
+  // Horários
+  startTime DateTime
+  endTime   DateTime
+
+  // Status e informações
+  status     AppointmentStatus @default(SCHEDULED)
+  notes      String?
+  totalPrice Decimal           @db.Decimal(10, 2)
+
+  // Relacionamentos
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id])
+  barber     Barber     @relation(fields: [barberId], references: [id])
+  client     User       @relation(fields: [clientId], references: [id])
+  service    Service    @relation(fields: [serviceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("appointments")
+}
+
+model GlobalSchedule {
+  id           String @id @default(cuid())
+  barbershopId String
+  dayOfWeek    Int // 0 = domingo, 1 = segunda, etc.
+
+  isOpen    Boolean @default(true)
+  openTime  String // "09:00"
+  closeTime String // "18:00"
+
+  // Intervalo (almoço)
+  lunchStart String? // "12:00"
+  lunchEnd   String? // "13:00"
+
+  // Relacionamentos
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id])
+
+  @@unique([barbershopId, dayOfWeek])
+  @@map("global_schedules")
+}
+
+model BarberSchedule {
+  id        String @id @default(cuid())
+  barberId  String
+  dayOfWeek Int // 0 = domingo, 1 = segunda, etc.
+
+  isWorking Boolean @default(true)
+  startTime String // "09:00" - PODE ser anterior ao global
+  endTime   String // "17:00" - PODE ser posterior ao global
+
+  // Intervalo pessoal
+  breakStart String? // "14:00"
+  breakEnd   String? // "15:00"
+
+  // Relacionamentos
+  barber Barber @relation(fields: [barberId], references: [id])
+
+  @@unique([barberId, dayOfWeek])
+  @@map("barber_schedules")
+}
+
+model GlobalException {
+  id           String        @id @default(cuid())
+  barbershopId String
+  date         DateTime      @db.Date
+  type         ExceptionType
+  reason       String
+
+  // Para SPECIAL_HOURS
+  specialOpenTime  String?
+  specialCloseTime String?
+
+  // Relacionamentos
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id])
+
+  @@unique([barbershopId, date])
+  @@map("global_exceptions")
+}
+
+model BarberException {
+  id       String        @id @default(cuid())
+  barberId String
+  date     DateTime      @db.Date
+  type     ExceptionType
+  reason   String
+
+  // Para SPECIAL_HOURS ou AVAILABLE
+  specialStartTime String?
+  specialEndTime   String?
+
+  // Relacionamentos
+  barber Barber @relation(fields: [barberId], references: [id])
+
+  @@unique([barberId, date])
+  @@map("barber_exceptions")
+}
+
+// Enums
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  BARBER
+  CLIENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum ExceptionType {
+  CLOSED      // Fechado
+  OFF         // Folga (para barbeiro)
+  SPECIAL_HOURS // Horário especial
+  VACATION    // Férias
+  AVAILABLE   // Disponível (mesmo com barbearia fechada)
+} 

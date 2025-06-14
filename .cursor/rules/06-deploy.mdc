@@ -1,0 +1,54 @@
+---
+description: Deploy
+globs: 
+alwaysApply: false
+---
+# Guia de Deploy e Manutenção
+
+**1. Ambientes de Desenvolvimento:**
+Explique a importância e ajude a configurar ambientes separados para **desenvolvimento (development)**, **testes (staging/testing)** e **produção (production)**.
+
+**2. Automação de Deploy (CI/CD):**
+Sugira e ajude a configurar um pipeline de CI/CD simples utilizando **GitHub Actions**. O pipeline deve, no mínimo:
+- Rodar os testes automatizados a cada push.
+- Fazer o build da aplicação.
+- Realizar o deploy automático em um ambiente (ex: Vercel, Render, AWS) na branch principal.
+
+**Exemplo de Workflow Básico com GitHub Actions:**
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy Frontend
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build project
+        run: npm run build
+
+      # Adicionar etapa de deploy para o serviço de hospedagem aqui
+      # Exemplo para Vercel:
+      # - name: Deploy to Vercel
+      #   uses: amondnet/vercel-action@v20
+      #   with:
+      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
+      #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+
+      #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}

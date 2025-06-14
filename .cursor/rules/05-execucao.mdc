@@ -1,0 +1,53 @@
+---
+description: 
+globs: *.js,*.ts,*.jsx,*.tsx,*.py,*.java,*.cs
+alwaysApply: false
+---
+---
+description: Diretrizes para a execução de código, testes e gestão de progresso do projeto.
+globs: [
+  "**/*.js",
+  "**/*.ts",
+  "**/*.jsx",
+  "**/*.tsx",
+  "**/*.py",
+  "**/*.java",
+  "**/*.cs"
+]
+---
+
+# Guia de Execução e Testes
+
+**1. Instruções Claras:**
+Forneça sempre instruções passo a passo para a implementação de qualquer funcionalidade.
+
+**2. Consciência e Uso de Ferramentas:**
+Lembre-se sempre de verificar os Servidores de Contexto (ferramentas MCP) disponíveis antes de responder. Se uma ferramenta pode automatizar uma tarefa ou enriquecer a resposta (ex: buscar na web, analisar um design, ler a documentação de uma API), **prefira utilizá-la** a tentar adivinhar ou gerar uma resposta genérica.
+
+**3. Gestão de Progresso Contínuo (Memória Ativa):**
+Ao concluir uma tarefa significativa (implementar uma funcionalidade, corrigir um bug, refatorar um módulo), é sua responsabilidade registrar o progresso para manter a consciência do estado atual do projeto. Para isso, siga os passos:
+* A. Sumarize o que foi feito: Descreva de forma objetiva a alteração realizada e os arquivos impactados.
+* B. Identifique os próximos passos: Com base na tarefa concluída, qual é a próxima etapa lógica? (ex: "agora é preciso escrever os testes para a função X", "o próximo passo é integrar o componente Y na página principal").
+* C. Atualize as Ferramentas MCP: Utilize as ferramentas de memória, checklist ou gerenciamento de projeto disponíveis para registrar o sumário (A) и os próximos passos (B). Esta ação é crucial para manter a continuidade e o contexto para futuras interações.
+
+**4. Código Comentado:**
+Gere exemplos de código bem comentados, explicando o "porquê" das partes mais importantes, não apenas o "o quê".
+
+**5. Testes Automatizados:**
+Para cada nova função de lógica de negócio, **sempre inclua um exemplo de teste automatizado** (unitário, E2E ou de integração) usando o framework de testes do projeto (ex: Vitest, Jest, Pytest, PlayWright) sempre analisando os mais atuais e que atendam ao contexto do projeto em execução.
+
+**Exemplo de Teste Unitário (Jest/Vitest):**
+```javascript
+import { test, expect, describe } from 'vitest';
+import { minhaFuncaoDeSoma } from './minhaFuncao';
+
+describe('minhaFuncaoDeSoma', () => {
+  test('deve somar dois números positivos corretamente', () => {
+    expect(minhaFuncaoDeSoma(2, 3)).toBe(5);
+  });
+
+  test('deve retornar zero se os dois operandos forem zero', () => {
+    expect(minhaFuncaoDeSoma(0, 0)).toBe(0);
+  });
+
+});

@@ -1,0 +1,37 @@
+---
+description: Arquitetura
+globs: 
+alwaysApply: false
+---
+---
+description: Guia para definição da arquitetura de software, padrões de design e estrutura de código.
+globs: ["**/*.{js,ts,jsx,tsx,py}"]
+---
+
+# Guia de Arquitetura e Design
+
+**1. Padrões de Arquitetura:**
+Apresente 1 ou 2 padrões de arquitetura adequados para o projeto (ex: MVC, MVVM, Arquitetura Hexagonal, Microserviços). Detalhe os prós e contras de cada um no contexto do projeto atual.
+
+**2. Estrutura de Pastas:**
+Sugira uma estrutura de pastas lógica e escalável para a codebase, explicando a responsabilidade de cada diretório principal.
+
+**3. Princípios de Design:**
+Lembre-me de aplicar os princípios **SOLID** e **DRY (Don't Repeat Yourself)**. Quando gerar código, aponte onde esses princípios estão sendo aplicados. O código deve ser sempre modular e reutilizável.
+
+**Exemplo de Componente Reutilizável (React):**
+```javascript
+// O componente deve ser simples, focado em uma única responsabilidade e facilmente reutilizável.
+function Button({ children, onClick, variant = 'primary' }) {
+  const baseStyle = "px-4 py-2 rounded font-bold";
+  const styles = {
+    primary: "bg-blue-500 text-white",
+    secondary: "bg-gray-500 text-white",
+  };
+  return (
+    <button onClick={onClick} className={`${baseStyle} ${styles[variant]}`}>
+      {children}
+    </button>
+  );
+
+}
