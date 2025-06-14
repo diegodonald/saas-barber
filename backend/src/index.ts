@@ -44,12 +44,14 @@ import authRoutes from './routes/auth'
 import userRoutes from './routes/users'
 import serviceRoutes from './routes/services'
 import appointmentRoutes from './routes/appointments'
+import barberServiceRoutes from './routes/barberService'
 
 // Configurar rotas da API
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/services', serviceRoutes)
 app.use('/api/appointments', appointmentRoutes)
+app.use('/api/barber-services', barberServiceRoutes)
 
 // Health check
 app.get('/health', (_req, res) => {
