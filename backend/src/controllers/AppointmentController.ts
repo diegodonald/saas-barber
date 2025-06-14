@@ -10,7 +10,8 @@ const createAppointmentSchema = z.object({
   barberId: z.string().cuid('ID do barbeiro inválido'),
   serviceId: z.string().cuid('ID do serviço inválido'),
   startTime: z.string().datetime('Data/hora inválida'),
-  notes: z.string().optional()
+  notes: z.string().optional(),
+  clientId: z.string().cuid('ID do cliente inválido').optional() // Opcional para quando CLIENT cria seu próprio agendamento
 });
 
 const updateAppointmentSchema = z.object({
@@ -59,27 +60,36 @@ export class AppointmentController {
     try {
       const validatedData = createAppointmentSchema.parse(req.body);
       
-      // Verificar se o usuário pode criar agendamento para este cliente
-      const clientId = req.user.role === 'CLIENT' ? req.user.userId : validatedData.barbershopId;
+      // Determinar o clientId correto baseado no role do usuário
+      let clientId: string;
       
-      if (req.user.role === 'CLIENT' && req.user.userId !== clientId) {
-        return res.status(403).json({
-          error: 'Você só pode criar agendamentos para si mesmo'
-        });
-      }
-
-      // Para barbeiros e admins, verificar se pertencem à barbearia
-      if (['BARBER', 'ADMIN'].includes(req.user.role)) {
+      if (req.user.role === 'CLIENT') {
+        // Cliente criando agendamento para si mesmo
+        clientId = req.user.userId;
+      } else if (['BARBER', 'ADMIN'].includes(req.user.role)) {
+        // Barbeiro ou Admin criando agendamento para um cliente
+        if (!validatedData.clientId) {
+          return res.status(400).json({
+            error: 'ID do cliente é obrigatório quando barbeiro ou admin cria agendamento'
+          });
+        }
+        clientId = validatedData.clientId;
+        
+        // Verificar se pertencem à barbearia
         if (req.user.barbershopId !== validatedData.barbershopId) {
           return res.status(403).json({
             error: 'Você só pode criar agendamentos para sua barbearia'
           });
         }
+      } else {
+        return res.status(403).json({
+          error: 'Permissão insuficiente para criar agendamentos'
+        });
       }
 
       const appointment = await this.appointmentService.create({
         ...validatedData,
-        clientId: req.user.role === 'CLIENT' ? req.user.userId : validatedData.barbershopId,
+        clientId,
         startTime: new Date(validatedData.startTime)
       });
 
