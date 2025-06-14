@@ -417,10 +417,9 @@ export class AppointmentService {
         break;
       }
 
-      // Verificar se não está no horário de intervalo
+      // Verificar se não está no horário de intervalo (corrigido para detectar qualquer sobreposição)
       const isInBreak = breakStartTime && breakEndTime && 
-        ((isAfter(currentTime, breakStartTime) || isEqual(currentTime, breakStartTime)) &&
-         isBefore(slotEndTime, breakEndTime));
+        (isBefore(currentTime, breakEndTime) && isAfter(slotEndTime, breakStartTime));
 
       // Verificar se há conflito com agendamentos existentes
       const hasConflict = existingAppointments.some(appointment => 
