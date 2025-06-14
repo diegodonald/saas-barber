@@ -39,8 +39,16 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'))
 }
 
+// Importar rotas
+import authRoutes from './routes/auth'
+import userRoutes from './routes/users'
+
+// Configurar rotas da API
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -51,7 +59,7 @@ app.get('/health', (req, res) => {
 })
 
 // Rota de teste
-app.get('/api/test', (req, res) => {
+app.get('/api/test', (_req, res) => {
   res.json({
     message: '🚀 SaaS Barber API está funcionando!',
     timestamp: new Date().toISOString(),
@@ -68,7 +76,7 @@ app.get('/api/test', (req, res) => {
 })
 
 // Middleware de erro global
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Error:', err)
   
   res.status(err.status || 500).json({
