@@ -1,19 +1,10 @@
 ---
-description: 
-globs: *.js,*.ts,*.jsx,*.tsx,*.py,*.java,*.cs
+description: Utilizar essa regra sempre que estiver fazendo modificações no código.
+globs: 
 alwaysApply: false
 ---
 ---
 description: Diretrizes para a execução de código, testes e gestão de progresso do projeto.
-globs: [
-  "**/*.js",
-  "**/*.ts",
-  "**/*.jsx",
-  "**/*.tsx",
-  "**/*.py",
-  "**/*.java",
-  "**/*.cs"
-]
 ---
 
 # Guia de Execução e Testes
@@ -28,7 +19,7 @@ Lembre-se sempre de verificar os Servidores de Contexto (ferramentas MCP) dispon
 Ao concluir uma tarefa significativa (implementar uma funcionalidade, corrigir um bug, refatorar um módulo), é sua responsabilidade registrar o progresso para manter a consciência do estado atual do projeto. Para isso, siga os passos:
 * A. Sumarize o que foi feito: Descreva de forma objetiva a alteração realizada e os arquivos impactados.
 * B. Identifique os próximos passos: Com base na tarefa concluída, qual é a próxima etapa lógica? (ex: "agora é preciso escrever os testes para a função X", "o próximo passo é integrar o componente Y na página principal").
-* C. Atualize as Ferramentas MCP: Utilize as ferramentas de memória, checklist ou gerenciamento de projeto disponíveis para registrar o sumário (A) и os próximos passos (B). Esta ação é crucial para manter a continuidade e o contexto para futuras interações.
+* C. Atualize as Ferramentas MCP: Utilize as ferramentas de memória, busque ochecklist_desenvolvimento.md ou gerenciamento de projeto disponíveis para registrar o sumário (A) и os próximos passos (B). Esta ação é crucial para manter a continuidade e o contexto para futuras interações.
 
 **4. Código Comentado:**
 Gere exemplos de código bem comentados, explicando o "porquê" das partes mais importantes, não apenas o "o quê".

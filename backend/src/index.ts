@@ -4,6 +4,9 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import compression from 'compression'
 import rateLimit from 'express-rate-limit'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: require('path').resolve(__dirname, '../../.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -13,7 +16,11 @@ app.use(helmet())
 
 // CORS
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: [
+    process.env.CORS_ORIGIN || 'http://localhost:3000',
+    'http://localhost:3003',
+    'http://localhost:5173'
+  ],
   credentials: true,
 }))
 
@@ -45,6 +52,7 @@ import userRoutes from './routes/users'
 import serviceRoutes from './routes/services'
 import appointmentRoutes from './routes/appointments'
 import barberServiceRoutes from './routes/barberService'
+import scheduleRoutes from './routes/scheduleRoutes'
 
 // Configurar rotas da API
 app.use('/api/auth', authRoutes)
@@ -52,6 +60,7 @@ app.use('/api/users', userRoutes)
 app.use('/api/services', serviceRoutes)
 app.use('/api/appointments', appointmentRoutes)
 app.use('/api/barber-services', barberServiceRoutes)
+app.use('/api/schedules', scheduleRoutes)
 
 // Health check
 app.get('/health', (_req, res) => {
@@ -107,14 +116,19 @@ app.use('*', (req, res) => {
   })
 })
 
-// Iniciar servidor
-if (process.env.NODE_ENV !== 'test') {
+// Função para inicializar o servidor
+const startServer = () => {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`)
     console.log(`📊 Health check: http://localhost:${PORT}/health`)
     console.log(`🧪 API test: http://localhost:${PORT}/api/test`)
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
   })
+}
+
+// Iniciar servidor
+if (process.env.NODE_ENV !== 'test') {
+  startServer()
 }
 
 export default app 
