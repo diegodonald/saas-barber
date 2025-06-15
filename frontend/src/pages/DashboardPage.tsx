@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarberServiceManager } from '../components/barber-services/BarberServiceManager';
+import { ScheduleManager } from '../components/schedule';
 
 export const DashboardPage: React.FC = () => {
   const { user, logout, hasRole } = useAuth();
   const [showBarberServices, setShowBarberServices] = useState(false);
+  const [showScheduleManager, setShowScheduleManager] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -150,7 +152,10 @@ export const DashboardPage: React.FC = () => {
                 {/* Ação para Barbeiros */}
                 {hasRole(['BARBER', 'ADMIN', 'SUPER_ADMIN']) && (
                   <>
-                    <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400">
+                    <div 
+                      className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400 cursor-pointer"
+                      onClick={() => setShowScheduleManager(true)}
+                    >
                       <div>
                         <span className="rounded-lg inline-flex p-3 bg-green-50 text-green-700">
                           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,10 +165,10 @@ export const DashboardPage: React.FC = () => {
                       </div>
                       <div className="mt-4">
                         <h3 className="text-sm font-medium text-gray-900">
-                          Gerenciar Agenda
+                          Gerenciar Horários
                         </h3>
                         <p className="mt-2 text-sm text-gray-500">
-                          Visualize e gerencie seus agendamentos
+                          Configure horários de funcionamento e exceções
                         </p>
                       </div>
                     </div>
@@ -244,65 +249,41 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-blue-800">
-                  Sistema em Desenvolvimento
+                  🚀 FASE 7 COMPLETA - Sistema de Horários
                 </h3>
                 <div className="mt-2 text-sm text-blue-700">
                   <p>
-                    Este é o dashboard básico da Phase 3. Funcionalidades completas serão implementadas nas próximas fases:
+                    <strong>Nova funcionalidade implementada:</strong> Sistema completo de gerenciamento de horários!
                   </p>
-                  <ul className="list-disc list-inside mt-1 space-y-1">
-                    <li>Sistema de agendamento</li>
-                    <li>Gestão de serviços</li>
-                    <li>Relatórios e analytics</li>
-                    <li>Configurações avançadas</li>
+                  <ul className="list-disc list-inside mt-2 space-y-1">
+                    <li>✅ <strong>Horários Globais:</strong> Configure horários da barbearia</li>
+                    <li>✅ <strong>Horários Individuais:</strong> Barbeiros podem ter horários próprios</li>
+                    <li>✅ <strong>Exceções:</strong> Feriados, folgas e horários especiais</li>
+                    <li>✅ <strong>Disponibilidade:</strong> Consulta em tempo real</li>
+                    <li>✅ <strong>Sistema de Precedência:</strong> 4 níveis de prioridade</li>
                   </ul>
+                  <p className="mt-2 font-medium">
+                    👆 Clique em "Gerenciar Horários" acima para experimentar!
+                  </p>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Dynamic Components */}
+          {showBarberServices && (
+            <div className="mt-6">
+              <BarberServiceManager onClose={() => setShowBarberServices(false)} />
+            </div>
+          )}
+
+          {showScheduleManager && (
+            <div className="mt-6">
+              <ScheduleManager onClose={() => setShowScheduleManager(false)} />
+            </div>
+          )}
         </div>
       </main>
-
-      {/* Modal de Serviços por Barbeiro */}
-      {showBarberServices && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Gerenciamento de Serviços por Barbeiro
-                  </h2>
-                  <button
-                    onClick={() => setShowBarberServices(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                
-                <BarberServiceManager
-                  onServiceAssigned={(barberService) => {
-                    console.log('Serviço atribuído:', barberService);
-                  }}
-                  onServiceUpdated={(barberService) => {
-                    console.log('Serviço atualizado:', barberService);
-                  }}
-                  onServiceRemoved={(barberServiceId) => {
-                    console.log('Serviço removido:', barberServiceId);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }; 
