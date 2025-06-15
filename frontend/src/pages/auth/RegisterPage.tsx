@@ -124,6 +124,10 @@ export const RegisterPage: React.FC = () => {
     try {
       // Remover confirmPassword antes de enviar
       const { confirmPassword, ...registerData } = formData;
+      // Garantir que o telefone está formatado corretamente antes de enviar
+      if (registerData.phone) {
+        registerData.phone = formatPhone(registerData.phone);
+      }
       await register(registerData);
       navigate('/dashboard', { replace: true });
     } catch (error) {
