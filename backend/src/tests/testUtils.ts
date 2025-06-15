@@ -46,25 +46,5 @@ export async function cleanDatabase() {
     }
   }
 }
- catch (error) {
-    console.warn('Erro ao limpar banco com TRUNCATE, tentando método alternativo:', error);
-    // Fallback: deletar individualmente
-    try {
-      await prisma.appointment.deleteMany({});
-      await prisma.barberService.deleteMany({});
-      await prisma.barberException.deleteMany({});
-      await prisma.barberSchedule.deleteMany({});
-      await prisma.globalException.deleteMany({});
-      await prisma.globalSchedule.deleteMany({});
-      await prisma.service.deleteMany({});
-      await prisma.barber.deleteMany({});
-      await prisma.client.deleteMany({});
-      await prisma.barbershop.deleteMany({});
-      await prisma.user.deleteMany({});
-    } catch (secondError) {
-      console.error('Erro crítico na limpeza do banco:', secondError);
-    }
-  }
-}
 
 export { prisma }; 
