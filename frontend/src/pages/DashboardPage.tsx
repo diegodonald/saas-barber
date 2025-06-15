@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { BarberServiceManager } from '../components/barber-services/BarberServiceManager';
 
 export const DashboardPage: React.FC = () => {
   const { user, logout, hasRole } = useAuth();
+  const [showBarberServices, setShowBarberServices] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -147,23 +149,46 @@ export const DashboardPage: React.FC = () => {
 
                 {/* Ação para Barbeiros */}
                 {hasRole(['BARBER', 'ADMIN', 'SUPER_ADMIN']) && (
-                  <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400">
-                    <div>
-                      <span className="rounded-lg inline-flex p-3 bg-green-50 text-green-700">
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      </span>
+                  <>
+                    <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400">
+                      <div>
+                        <span className="rounded-lg inline-flex p-3 bg-green-50 text-green-700">
+                          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                        </span>
+                      </div>
+                      <div className="mt-4">
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Gerenciar Agenda
+                        </h3>
+                        <p className="mt-2 text-sm text-gray-500">
+                          Visualize e gerencie seus agendamentos
+                        </p>
+                      </div>
                     </div>
-                    <div className="mt-4">
-                      <h3 className="text-sm font-medium text-gray-900">
-                        Gerenciar Agenda
-                      </h3>
-                      <p className="mt-2 text-sm text-gray-500">
-                        Visualize e gerencie seus agendamentos
-                      </p>
+
+                    <div 
+                      className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400 cursor-pointer"
+                      onClick={() => setShowBarberServices(true)}
+                    >
+                      <div>
+                        <span className="rounded-lg inline-flex p-3 bg-blue-50 text-blue-700">
+                          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6.5" />
+                          </svg>
+                        </span>
+                      </div>
+                      <div className="mt-4">
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Serviços por Barbeiro
+                        </h3>
+                        <p className="mt-2 text-sm text-gray-500">
+                          Configure quais serviços cada barbeiro pode executar
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
 
                 {/* Ação para Admins */}
@@ -237,6 +262,47 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Modal de Serviços por Barbeiro */}
+      {showBarberServices && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Gerenciamento de Serviços por Barbeiro
+                  </h2>
+                  <button
+                    onClick={() => setShowBarberServices(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <BarberServiceManager
+                  onServiceAssigned={(barberService) => {
+                    console.log('Serviço atribuído:', barberService);
+                  }}
+                  onServiceUpdated={(barberService) => {
+                    console.log('Serviço atualizado:', barberService);
+                  }}
+                  onServiceRemoved={(barberServiceId) => {
+                    console.log('Serviço removido:', barberServiceId);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }; 
