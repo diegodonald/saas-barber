@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from '@jest/globals';
 import { BarberServiceService } from '../services/BarberServiceService';
 import { cleanDatabase, prisma } from './testUtils';
 const barberServiceService = new BarberServiceService(prisma);
@@ -88,6 +88,19 @@ describe('BarberServiceService', () => {
   afterEach(async () => {
     // Limpar dados de teste na ordem correta (respeitando foreign keys)
     await cleanDatabase();
+  });
+      }
+      
+      // Limpar agendamentos se existirem
+      await prisma.appointment.deleteMany({});
+      
+      // Resetar variáveis
+      testBarberServiceId = '';
+    } catch (error) {
+      console.warn('Erro no cleanup do afterEach:', error);
+      // Se falhar, fazer cleanup completo
+      await cleanDatabase();
+    }
   });
 
   afterAll(async () => {
