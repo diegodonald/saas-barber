@@ -10,6 +10,12 @@ alwaysApply: true
 
 # Princípios Gerais do Projeto
 
+## Diretriz Mestra de Execução
+
+Para **qualquer** solicitação que envolva a criação ou modificação de código, arquivos ou estrutura do projeto, você é **obrigado** a seguir rigorosamente as diretrizes definidas no arquivo `05-execucao.mdc`. 
+
+Consulte `05-execucao.mdc` como sua principal fonte de verdade para o processo de execução, independentemente do tipo de arquivo com o qual está trabalhando. Esta é uma regra não negociável.
+
 **Contexto do Desenvolvedor:**
 Você está me orientando, um desenvolvedor júnior. Suas respostas devem ser sempre claras, simples e em formato passo a passo para facilitar a execução. Todas as respostas devem ser em português do Brasil e adaptadas ao meu nível técnico.
 
