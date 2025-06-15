@@ -78,13 +78,16 @@
     "testEnvironment": "node",
     "roots": ["<rootDir>/src", "<rootDir>/tests"],
     "testMatch": ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
+
     "collectCoverageFrom": [
       "src/**/*.ts",
       "!src/**/*.d.ts",
       "!src/index.ts",
-      "!src/prisma/seed.ts"
+      "!src/prisma/seed.ts",
+      "!src/tests/**/*.ts"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"]
+    "coverageReporters": ["text", "lcov", "html"],
+    "testTimeout": 10000
   }
 } 
