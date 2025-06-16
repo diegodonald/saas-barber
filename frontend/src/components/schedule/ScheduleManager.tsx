@@ -48,6 +48,7 @@ export interface ScheduleManagerProps {
   onScheduleCreated?: (schedule: GlobalSchedule | BarberSchedule) => void;
   onScheduleUpdated?: (schedule: GlobalSchedule | BarberSchedule) => void;
   onScheduleDeleted?: (scheduleId: string) => void;
+  onClose?: () => void;
   onExceptionCreated?: (exception: GlobalException | BarberException) => void;
   onExceptionUpdated?: (exception: GlobalException | BarberException) => void;
   onExceptionDeleted?: (exceptionId: string) => void;
@@ -63,6 +64,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
   onExceptionCreated,
   onExceptionUpdated,
   onExceptionDeleted,
+  onClose: _onClose,
 }) => {
   const { user, hasRole } = useAuth();
   const [activeTab, setActiveTab] = useState<'schedules' | 'exceptions' | 'availability'>('schedules');
@@ -345,19 +347,27 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
     if (!exceptionsToRender?.length) return <div className="text-center py-8 text-gray-600"><p className="mb-4">Nenhuma exceção configurada</p><button onClick={() => { setEditingException(null); setShowExceptionForm(true);}} className="btn btn-primary">Criar Primeira Exceção</button></div>;
 
     return (
-      <div className="space-y-4">
-        {exceptionsToRender.map((exception) => {
-          const isBarberType = 'barberId' in exception;
-          let currentSpecialOpenTime: string | undefined | null = null;
-          let currentSpecialCloseTime: string | undefined | null = null;
-
-          if (isBarberType && 'specialStartTime' in exception) {
-            currentSpecialOpenTime = exception.specialStartTime;
-            currentSpecialCloseTime = exception.specialEndTime;
-          } else if (!isBarberType && 'specialOpenTime' in exception) {
-            currentSpecialOpenTime = exception.specialOpenTime;
-            currentSpecialCloseTime = exception.specialCloseTime;
-          }
+      <div className="space-y-4">        {exceptionsToRender.map((exception) => {          
+          // Helper para obter horários especiais baseado no tipo de exceção
+          const getSpecialTimes = (exception: GlobalException | BarberException) => {
+            if ('barberId' in exception) {
+              // BarberException
+              return {
+                openTime: exception.specialStartTime,
+                closeTime: exception.specialEndTime
+              };
+            } else {
+              // GlobalException
+              return {
+                openTime: exception.specialOpenTime,
+                closeTime: exception.specialCloseTime
+              };
+            }
+          };
+          
+          const specialTimes = getSpecialTimes(exception);
+          const currentSpecialOpenTime = specialTimes.openTime;
+          const currentSpecialCloseTime = specialTimes.closeTime;
           
           return (
             <div key={exception.id} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
@@ -374,9 +384,8 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                     }`}>
                       {EXCEPTION_TYPE_LABELS[exception.type]}
                     </span>
-                  </div>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p><span className="font-medium">Motivo:</span> {String(exception.reason)}</p>
+                  </div>                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><span className="font-medium">Motivo:</span> {exception.reason}</p>
                     {(exception.type === ExceptionType.SPECIAL_HOURS || exception.type === ExceptionType.AVAILABLE) && currentSpecialOpenTime && currentSpecialCloseTime && (
                       <p><span className="font-medium">Horário Especial:</span> {currentSpecialOpenTime} às {currentSpecialCloseTime}</p>
                     )}

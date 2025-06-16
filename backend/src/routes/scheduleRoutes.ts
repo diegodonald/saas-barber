@@ -19,7 +19,7 @@ router.use('/global-schedules', authenticate);
 
 // Criar horário global (apenas ADMIN)
 router.post('/global-schedules', 
-  authorize('ADMIN'), 
+  authorize(['ADMIN']), 
   GlobalScheduleController.create
 );
 
@@ -37,13 +37,13 @@ router.get('/global-schedules/:id',
 
 // Atualizar horário global (apenas ADMIN)
 router.put('/global-schedules/:id', 
-  authorize('ADMIN'), 
+  authorize(['ADMIN']), 
   GlobalScheduleController.update
 );
 
 // Remover horário global (apenas ADMIN)
 router.delete('/global-schedules/:id', 
-  authorize('ADMIN'), 
+  authorize(['ADMIN']), 
   GlobalScheduleController.delete
 );
 
@@ -93,7 +93,7 @@ router.use('/global-exceptions', authenticate);
 
 // Criar exceção global (apenas ADMIN)
 router.post('/global-exceptions', 
-  authorize('ADMIN'), 
+  authorize(['ADMIN']), 
   GlobalExceptionController.create
 );
 
@@ -111,13 +111,13 @@ router.get('/global-exceptions/:id',
 
 // Atualizar exceção global (apenas ADMIN)
 router.put('/global-exceptions/:id', 
-  authorize('ADMIN'), 
+  authorize(['ADMIN']), 
   GlobalExceptionController.update
 );
 
 // Remover exceção global (apenas ADMIN)
 router.delete('/global-exceptions/:id', 
-  authorize('ADMIN'), 
+  authorize(['ADMIN']), 
   GlobalExceptionController.delete
 );
 
@@ -179,7 +179,7 @@ router.get('/availability/barber/:barberId/date/:date',
 // Rota para criar horários padrão de uma barbearia (ADMIN)
 router.post('/admin/barbershop/:barbershopId/setup-default-schedule', 
   authenticate,
-  authorize('ADMIN'),
+  authorize(['ADMIN']),
   async (req, res) => {
     try {
       const { barbershopId } = req.params;
@@ -237,7 +237,7 @@ router.post('/admin/barbershop/:barbershopId/setup-default-schedule',
 // Rota para copiar horários globais para um barbeiro específico (ADMIN)
 router.post('/admin/barber/:barberId/copy-global-schedule', 
   authenticate,
-  authorize('ADMIN'),
+  authorize(['ADMIN']),
   async (req, res) => {
     try {
       const { barberId } = req.params;

@@ -20,7 +20,7 @@ export class GlobalScheduleController {
         message: 'Horário global criado com sucesso',
         data: schedule,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao criar horário global',
@@ -49,7 +49,7 @@ export class GlobalScheduleController {
         message: 'Horários globais recuperados com sucesso',
         data: schedules,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar horários globais',
@@ -74,7 +74,7 @@ export class GlobalScheduleController {
         message: 'Horário global recuperado com sucesso',
         data: schedule,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar horário global',
@@ -93,7 +93,7 @@ export class GlobalScheduleController {
         message: 'Horário global atualizado com sucesso',
         data: schedule,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao atualizar horário global',
@@ -111,7 +111,7 @@ export class GlobalScheduleController {
         success: true,
         message: 'Horário global removido com sucesso',
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao remover horário global',
@@ -134,7 +134,7 @@ export class BarberScheduleController {
         message: 'Horário de barbeiro criado com sucesso',
         data: schedule,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao criar horário de barbeiro',
@@ -160,7 +160,7 @@ export class BarberScheduleController {
         message: 'Horários de barbeiros recuperados com sucesso',
         data: schedules,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar horários de barbeiros',
@@ -185,7 +185,7 @@ export class BarberScheduleController {
         message: 'Horário de barbeiro recuperado com sucesso',
         data: schedule,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar horário de barbeiro',
@@ -204,7 +204,7 @@ export class BarberScheduleController {
         message: 'Horário de barbeiro atualizado com sucesso',
         data: schedule,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao atualizar horário de barbeiro',
@@ -222,7 +222,7 @@ export class BarberScheduleController {
         success: true,
         message: 'Horário de barbeiro removido com sucesso',
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao remover horário de barbeiro',
@@ -245,7 +245,7 @@ export class GlobalExceptionController {
         message: 'Exceção global criada com sucesso',
         data: exception,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao criar exceção global',
@@ -271,7 +271,7 @@ export class GlobalExceptionController {
         message: 'Exceções globais recuperadas com sucesso',
         data: exceptions,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar exceções globais',
@@ -296,7 +296,7 @@ export class GlobalExceptionController {
         message: 'Exceção global recuperada com sucesso',
         data: exception,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar exceção global',
@@ -315,7 +315,7 @@ export class GlobalExceptionController {
         message: 'Exceção global atualizada com sucesso',
         data: exception,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao atualizar exceção global',
@@ -333,7 +333,7 @@ export class GlobalExceptionController {
         success: true,
         message: 'Exceção global removida com sucesso',
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao remover exceção global',
@@ -356,7 +356,7 @@ export class BarberExceptionController {
         message: 'Exceção de barbeiro criada com sucesso',
         data: exception,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao criar exceção de barbeiro',
@@ -383,7 +383,7 @@ export class BarberExceptionController {
         message: 'Exceções de barbeiros recuperadas com sucesso',
         data: exceptions,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar exceções de barbeiros',
@@ -408,7 +408,7 @@ export class BarberExceptionController {
         message: 'Exceção de barbeiro recuperada com sucesso',
         data: exception,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar exceção de barbeiro',
@@ -427,7 +427,7 @@ export class BarberExceptionController {
         message: 'Exceção de barbeiro atualizada com sucesso',
         data: exception,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao atualizar exceção de barbeiro',
@@ -445,7 +445,7 @@ export class BarberExceptionController {
         success: true,
         message: 'Exceção de barbeiro removida com sucesso',
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
         message: error.message || 'Erro ao remover exceção de barbeiro',
@@ -477,7 +477,7 @@ export class AvailabilityController {
         message: 'Disponibilidade recuperada com sucesso',
         data: availability,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar disponibilidade',
@@ -513,7 +513,7 @@ export class AvailabilityController {
         message: 'Disponibilidade do barbeiro recuperada com sucesso',
         data: availability,
       });
-    } catch (error: Error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar disponibilidade do barbeiro',

@@ -20,17 +20,17 @@ export class UserController {
   async getProfile(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
-      
-      if (!user) {
-        return res.status(401).json({
+        if (!user) {
+        res.status(401).json({
           success: false,
           message: 'Usuário não autenticado'
         });
+        return;
       }
 
       const profile = await userService.findById(user.userId);
 
-      return res.json({
+      res.json({
         success: true,
         message: 'Perfil obtido com sucesso',
         data: { user: profile }
@@ -39,13 +39,13 @@ export class UserController {
       console.error('Erro ao obter perfil:', error);
       
       if (error instanceof Error && error.message.includes('não encontrado')) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Usuário não encontrado'
         });
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
       });
@@ -63,7 +63,7 @@ export class UserController {
 
       const updatedUser = await userService.updateUser(user.userId, validatedData);
 
-      return res.json({
+      res.json({
         success: true,
         message: 'Perfil atualizado com sucesso',
         data: { user: updatedUser }
@@ -73,14 +73,14 @@ export class UserController {
       
       if (error instanceof Error) {
         if (error.message.includes('não encontrado')) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Usuário não encontrado'
           });
         }
         
         if (error.message.includes('Dados inválidos')) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: 'Dados de entrada inválidos',
             error: error.message
@@ -88,7 +88,7 @@ export class UserController {
         }
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
       });
@@ -106,7 +106,7 @@ export class UserController {
 
       const updatedUser = await userService.updateClientProfile(user.userId, validatedData);
 
-      return res.json({
+      res.json({
         success: true,
         message: 'Perfil do cliente atualizado com sucesso',
         data: { user: updatedUser }
@@ -116,21 +116,21 @@ export class UserController {
       
       if (error instanceof Error) {
         if (error.message.includes('não encontrado')) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Usuário não encontrado'
           });
         }
         
         if (error.message.includes('não é um cliente')) {
-          return res.status(403).json({
+          res.status(403).json({
             success: false,
             message: 'Usuário não tem permissão para esta operação'
           });
         }
         
         if (error.message.includes('Dados inválidos')) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: 'Dados de entrada inválidos',
             error: error.message
@@ -138,7 +138,7 @@ export class UserController {
         }
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
       });
@@ -156,7 +156,7 @@ export class UserController {
 
       const updatedUser = await userService.updateBarberProfile(user.userId, validatedData);
 
-      return res.json({
+      res.json({
         success: true,
         message: 'Perfil do barbeiro atualizado com sucesso',
         data: { user: updatedUser }
@@ -166,21 +166,21 @@ export class UserController {
       
       if (error instanceof Error) {
         if (error.message.includes('não encontrado')) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Usuário não encontrado'
           });
         }
         
         if (error.message.includes('não é um barbeiro')) {
-          return res.status(403).json({
+          res.status(403).json({
             success: false,
             message: 'Usuário não tem permissão para esta operação'
           });
         }
         
         if (error.message.includes('Dados inválidos')) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: 'Dados de entrada inválidos',
             error: error.message
@@ -188,7 +188,7 @@ export class UserController {
         }
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
       });
@@ -209,7 +209,7 @@ export class UserController {
         newPassword: validatedData.newPassword
       });
 
-      return res.json({
+      res.json({
         success: true,
         message: result.message
       });
@@ -218,21 +218,21 @@ export class UserController {
       
       if (error instanceof Error) {
         if (error.message.includes('não encontrado')) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Usuário não encontrado'
           });
         }
         
         if (error.message.includes('incorreta')) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: 'Senha atual incorreta'
           });
         }
         
         if (error.message.includes('Dados inválidos')) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: 'Dados de entrada inválidos',
             error: error.message
@@ -240,7 +240,7 @@ export class UserController {
         }
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
       });
@@ -257,7 +257,7 @@ export class UserController {
       
       // Verificar se é SUPER_ADMIN
       if (user.role !== 'SUPER_ADMIN') {
-        return res.status(403).json({
+        res.status(403).json({
           success: false,
           message: 'Acesso negado'
         });
@@ -270,7 +270,7 @@ export class UserController {
         validatedQuery.role
       );
 
-      return res.json({
+      res.json({
         success: true,
         message: 'Usuários obtidos com sucesso',
         data: result
@@ -279,14 +279,14 @@ export class UserController {
       console.error('Erro ao listar usuários:', error);
       
       if (error instanceof Error && error.message.includes('Dados inválidos')) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'Parâmetros de consulta inválidos',
           error: error.message
         });
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
       });
@@ -304,7 +304,7 @@ export class UserController {
       
       // Verificar permissões
       if (!['SUPER_ADMIN', 'ADMIN'].includes(user.role)) {
-        return res.status(403).json({
+        res.status(403).json({
           success: false,
           message: 'Acesso negado'
         });
@@ -312,7 +312,7 @@ export class UserController {
 
       const foundUser = await userService.findById(validatedParams.id);
 
-      return res.json({
+      res.json({
         success: true,
         message: 'Usuário obtido com sucesso',
         data: { user: foundUser }
@@ -322,14 +322,14 @@ export class UserController {
       
       if (error instanceof Error) {
         if (error.message.includes('não encontrado')) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Usuário não encontrado'
           });
         }
         
         if (error.message.includes('Dados inválidos')) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: 'ID inválido',
             error: error.message
@@ -337,7 +337,7 @@ export class UserController {
         }
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
       });
@@ -355,7 +355,7 @@ export class UserController {
       
       // Verificar se é SUPER_ADMIN
       if (user.role !== 'SUPER_ADMIN') {
-        return res.status(403).json({
+        res.status(403).json({
           success: false,
           message: 'Acesso negado'
         });
@@ -363,7 +363,7 @@ export class UserController {
 
       const result = await userService.deactivateUser(validatedParams.id);
 
-      return res.json({
+      res.json({
         success: true,
         message: result.message
       });
@@ -372,14 +372,14 @@ export class UserController {
       
       if (error instanceof Error) {
         if (error.message.includes('não encontrado')) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Usuário não encontrado'
           });
         }
         
         if (error.message.includes('Dados inválidos')) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: 'ID inválido',
             error: error.message
@@ -387,7 +387,7 @@ export class UserController {
         }
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
       });

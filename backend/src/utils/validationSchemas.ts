@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Role, Gender } from '@prisma/client';
-
+import { Request, Response, NextFunction } from 'express';
 // Schema para validação de email
 const emailSchema = z.string()
   .email('Email inválido')
@@ -138,7 +138,7 @@ export function validateSchema<T>(schema: z.ZodSchema<T>, data: unknown): T {
 
 // Middleware helper para validação de request
 export function createValidationMiddleware<T>(schema: z.ZodSchema<T>) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request & { validatedData?: T }, res: Response, next: NextFunction): void => {
     try {
       req.validatedData = validateSchema(schema, req.body);
       next();
