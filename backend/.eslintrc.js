@@ -25,6 +25,13 @@ module.exports = {
       'argsIgnorePattern': '^_',
       'varsIgnorePattern': '^_'
     }],
-    'no-console': 'warn'
+    'prefer-const': 'warn',
+    'no-console': 'warn',
+    '@typescript-eslint/ban-ts-comment': ['error', {
+      'ts-expect-error': 'allow-with-description',
+      'ts-ignore': false,
+      'ts-nocheck': true,
+      'ts-check': true,
+    }]
   },
 }
