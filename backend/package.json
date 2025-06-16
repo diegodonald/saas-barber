@@ -74,8 +74,7 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
-  },
-  "jest": {
+  },  "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
     "setupFilesAfterEnv": [
@@ -102,6 +101,8 @@
       "lcov",
       "html"
     ],
-    "testTimeout": 10000
+    "testTimeout": 15000,
+    "maxWorkers": 1,
+    "forceExit": true
   }
 }

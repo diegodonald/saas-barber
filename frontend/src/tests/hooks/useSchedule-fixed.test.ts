@@ -131,10 +131,11 @@ describe('useSchedule Hook', () => {
       expect(mockScheduleApi.globalSchedule.create).toHaveBeenCalledWith(createData);
     });
   });
+
   describe('Error Handling', () => {
     test('deve tratar erro ao buscar horários globais', async () => {
       const errorMessage = 'Erro ao buscar horários';
-      mockScheduleApi.globalSchedule.getByBarbershop.mockRejectedValue(new Error(errorMessage));
+      mockScheduleApi.globalSchedule.getMany.mockRejectedValue(new Error(errorMessage));
 
       const { result } = renderHook(
         () => useSchedule({

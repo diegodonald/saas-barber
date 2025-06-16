@@ -4,47 +4,43 @@ const prisma = new PrismaClient();
 
 /**
  * Limpa todas as tabelas do banco de dados na ordem correta
- * para respeitar as foreign key constraints
+ * para respeitar as foreign key constraints, usando transação
  */
 export async function cleanDatabase() {
-  // Usar TRUNCATE CASCADE para limpar todas as tabelas de uma vez
-  // Isso é mais eficiente e evita problemas de foreign key constraints
   try {
-    await prisma.$executeRaw`
-      TRUNCATE TABLE 
-        appointments,
-        barber_services,
-        barber_exceptions,
-        barber_schedules,
-        global_exceptions,
-        global_schedules,
-        services,
-        barbers,
-        clients,
-        barbershops,
-        users
-      RESTART IDENTITY CASCADE;
-    `;
+    // Usar transação para garantir atomicidade
+    await prisma.$transaction(async (tx) => {
+      // Desabilitar verificação de foreign keys temporariamente (PostgreSQL)
+      await tx.$executeRaw`SET session_replication_role = replica;`;
+
+      // Deletar todas as tabelas na ordem correta
+      await tx.appointment.deleteMany({});
+      await tx.barberService.deleteMany({});
+      await tx.barberException.deleteMany({});
+      await tx.barberSchedule.deleteMany({});
+      await tx.globalException.deleteMany({});
+      await tx.globalSchedule.deleteMany({});
+      await tx.service.deleteMany({});
+      await tx.barber.deleteMany({});
+      await tx.client.deleteMany({});
+      await tx.barbershop.deleteMany({});
+      await tx.user.deleteMany({});
+
+      // Reabilitar verificação de foreign keys
+      await tx.$executeRaw`SET session_replication_role = DEFAULT;`;
+    });
+    
   } catch (error) {
-    console.warn('Erro ao limpar banco com TRUNCATE, tentando método alternativo:', error);
-    // Fallback: deletar individualmente respeitando foreign keys
+    // Garantir que foreign keys sejam reabilitadas mesmo em caso de erro
     try {
-      await prisma.appointment.deleteMany({});
-      await prisma.barberService.deleteMany({});
-      await prisma.barberException.deleteMany({});
-      await prisma.barberSchedule.deleteMany({});
-      await prisma.globalException.deleteMany({});
-      await prisma.globalSchedule.deleteMany({});
-      await prisma.service.deleteMany({});
-      await prisma.barber.deleteMany({});
-      await prisma.client.deleteMany({});
-      await prisma.barbershop.deleteMany({});
-      await prisma.user.deleteMany({});
-    } catch (secondError) {
-      console.error('Erro crítico na limpeza do banco:', secondError);
-      throw secondError;
+      await prisma.$executeRaw`SET session_replication_role = DEFAULT;`;
+    } catch (resetError) {
+      console.warn('Erro ao resetar foreign keys:', resetError);
     }
+    
+    console.error('Erro crítico na limpeza do banco:', error);
+    throw error;
   }
 }
 
-export { prisma }; 
+export { prisma };

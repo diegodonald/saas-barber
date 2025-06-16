@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from '@jest/globals';
 import { BarberServiceService } from '../services/BarberServiceService';
 import { cleanDatabase, prisma } from './testUtils';
+
 const barberServiceService = new BarberServiceService(prisma);
 
 // IDs de teste que serão criados
@@ -11,6 +11,76 @@ let testServiceId: string;
 let testClientId: string;
 let testBarberServiceId: string;
 
+async function setupTestData() {
+  // Gerar timestamp único para evitar conflitos de email
+  const timestamp = Date.now();
+  
+  // Primeiro criar o owner
+  const ownerUser = await prisma.user.create({
+    data: {
+      name: 'Dono da Barbearia',
+      email: `dono-${timestamp}@barbearia.com`,
+      phone: '11999999998',
+      password: 'hashedpassword',
+      role: 'ADMIN'
+    }
+  });
+
+  const barbershop = await prisma.barbershop.create({
+    data: {
+      name: 'Barbearia Teste',
+      email: `teste-${timestamp}@barbearia.com`,
+      phone: '11999999999',
+      address: 'Rua Teste, 123',
+      ownerId: ownerUser.id
+    }
+  });
+  testBarbershopId = barbershop.id;
+
+  const user = await prisma.user.create({
+    data: {
+      name: 'João Barbeiro',
+      email: `joao-${timestamp}@teste.com`,
+      phone: '11888888888',
+      password: 'hashedpassword',
+      role: 'BARBER'
+    }
+  });
+  testUserId = user.id;
+
+  const barber = await prisma.barber.create({
+    data: {
+      userId: testUserId,
+      barbershopId: testBarbershopId,
+      specialties: ['Corte', 'Barba']
+    }
+  });
+  testBarberId = barber.id;
+
+  const service = await prisma.service.create({
+    data: {
+      barbershopId: testBarbershopId,
+      name: 'Corte Masculino',
+      description: 'Corte tradicional',
+      duration: 30,
+      price: 25.00,
+      category: 'Corte'
+    }
+  });
+  testServiceId = service.id;
+
+  const clientUser = await prisma.user.create({
+    data: {
+      name: 'Cliente Teste',
+      email: `cliente-${timestamp}@teste.com`,
+      phone: '11777777777',
+      password: 'hashedpassword',
+      role: 'CLIENT'
+    }
+  });
+  testClientId = clientUser.id;
+}
+
 describe('BarberServiceService', () => {
   beforeAll(async () => {
     // Limpar banco antes de começar
@@ -18,79 +88,14 @@ describe('BarberServiceService', () => {
   });
 
   beforeEach(async () => {
-    // Criar dados de teste
-    // Primeiro criar o owner
-    const ownerUser = await prisma.user.create({
-      data: {
-        name: 'Dono da Barbearia',
-        email: 'dono@barbearia.com',
-        phone: '11999999998',
-        password: 'hashedpassword',
-        role: 'ADMIN'
-      }
-    });
-
-    const barbershop = await prisma.barbershop.create({
-      data: {
-        name: 'Barbearia Teste',
-        email: 'teste@barbearia.com',
-        phone: '11999999999',
-        address: 'Rua Teste, 123',
-        ownerId: ownerUser.id
-      }
-    });
-    testBarbershopId = barbershop.id;
-
-    const user = await prisma.user.create({
-      data: {
-        name: 'João Barbeiro',
-        email: 'joao@teste.com',
-        phone: '11888888888',
-        password: 'hashedpassword',
-        role: 'BARBER'
-      }
-    });
-    testUserId = user.id;
-
-    const barber = await prisma.barber.create({
-      data: {
-        userId: testUserId,
-        barbershopId: testBarbershopId,
-        specialties: ['Corte', 'Barba']
-      }
-    });
-    testBarberId = barber.id;
-
-    const service = await prisma.service.create({
-      data: {
-        barbershopId: testBarbershopId,
-        name: 'Corte Masculino',
-        description: 'Corte tradicional',
-        duration: 30,
-        price: 25.00,
-        category: 'Corte'
-      }
-    });
-    testServiceId = service.id;
-
-    const clientUser = await prisma.user.create({
-      data: {
-        name: 'Cliente Teste',
-        email: 'cliente@teste.com',
-        phone: '11777777777',
-        password: 'hashedpassword',
-        role: 'CLIENT'
-      }
-    });
-    testClientId = clientUser.id;
-  });
-
-  afterEach(async () => {
-    // Limpar dados de teste na ordem correta (respeitando foreign keys)
+    // Limpar tudo e criar dados de teste para cada teste
     await cleanDatabase();
+    await setupTestData();
   });
 
   afterAll(async () => {
+    // Limpar tudo no final
+    await cleanDatabase();
     await prisma.$disconnect();
   });
 

@@ -3,8 +3,9 @@
  * Testa operações CRUD, estado e integração com API
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { act } from 'react';
 import { useBarberServices } from '../../hooks/useBarberServices';
 import { barberServiceApi } from '../../services/barberServiceApi';
 
@@ -120,19 +121,19 @@ describe('useBarberServices Hook', () => {
         expect(result.current.totalItems).toBe(1);
         expect(result.current.stats).toEqual(mockStats);
       });
-    });
-
-    test('deve aplicar filtros iniciais', async () => {
+    });    test('deve aplicar filtros iniciais', async () => {
       // Arrange: Mock da API
       vi.mocked(barberServiceApi.getBarberServices).mockResolvedValue(mockApiResponse);
       
       const initialFilters = { barberId: 'barber-1', isActive: true };
 
       // Act: Renderizar com filtros iniciais
-      renderHook(() => useBarberServices({ 
-        autoLoad: true,
-        initialFilters
-      }));
+      await act(async () => {
+        renderHook(() => useBarberServices({ 
+          autoLoad: true,
+          initialFilters
+        }));
+      });
 
       // Assert: Verificar que a API foi chamada com filtros
       await waitFor(() => {
@@ -338,11 +339,10 @@ describe('useBarberServices Hook', () => {
     });
   });
 
-  describe('Estados de carregamento', () => {
-    test('deve mostrar loading durante operações', async () => {
+  describe('Estados de carregamento', () => {    test('deve mostrar loading durante operações', async () => {
       // Arrange: Mock da API com delay
       vi.mocked(barberServiceApi.getBarberServices).mockImplementation(
-        () => new Promise(resolve => 
+        () => new Promise<{ data: any[]; total: number; page: number; limit: number; }>(resolve => 
           setTimeout(() => resolve(mockApiResponse), 100)
         )
       );
@@ -357,12 +357,10 @@ describe('useBarberServices Hook', () => {
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
       });
-    });
-
-    test('deve mostrar isCreating durante criação', async () => {
+    });    test('deve mostrar isCreating durante criação', async () => {
       // Arrange: Mock da API com delay
       vi.mocked(barberServiceApi.createBarberService).mockImplementation(
-        () => new Promise(resolve => 
+        () => new Promise<any>(resolve => 
           setTimeout(() => resolve(mockBarberService), 100)
         )
       );
