@@ -85,12 +85,13 @@ export class AppointmentController {
         return res.status(403).json({
           error: 'Permissão insuficiente para criar agendamentos'
         });
-      }
-
-      const appointment = await this.appointmentService.create({
-        ...validatedData,
+      }      const appointment = await this.appointmentService.create({
+        barbershopId: validatedData.barbershopId!,
+        barberId: validatedData.barberId!,
+        serviceId: validatedData.serviceId!,
         clientId,
-        startTime: new Date(validatedData.startTime)
+        startTime: new Date(validatedData.startTime),
+        notes: validatedData.notes
       });
 
       return res.status(201).json(appointment);

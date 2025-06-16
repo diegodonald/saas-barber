@@ -59,7 +59,12 @@ export class BarberServiceController {
         });
       }
 
-      const barberService = await this.barberServiceService.create(validatedData);
+      const barberService = await this.barberServiceService.create({
+        barberId: validatedData.barberId,
+        serviceId: validatedData.serviceId,
+        customPrice: validatedData.customPrice,
+        isActive: validatedData.isActive
+      });
 
       return res.status(201).json(barberService);
     } catch (error) {

@@ -1,17 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/AuthService';
 import { Role } from '@prisma/client';
+import { AuthenticatedRequest } from '../types/auth';
 
 const authService = new AuthService();
-
-// Interface para estender o Request com dados do usuário
-interface AuthenticatedRequest extends Request {
-  user?: {
-    userId: string;
-    email: string;
-    role: Role;
-  };
-}
 
 /**
  * Middleware de autenticação

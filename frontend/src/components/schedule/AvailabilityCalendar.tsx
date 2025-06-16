@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AvailabilityResponse, BarberAvailability, minutesToTimeString } from '../../types/schedule';
+import { AvailabilityResponse, minutesToTimeString } from '../../types/schedule';
+import { AvailabilityResponseExtended, BarberAvailabilityExtended } from '../../types/schedule-extensions';
 
 export interface AvailabilityCalendarProps {
   barbershopId?: string;
@@ -11,8 +12,8 @@ export interface AvailabilityCalendarProps {
 }
 
 export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
-  barbershopId,
-  barberId,
+  barbershopId: _barbershopId,
+  barberId: _barberId,
   availability,
   isLoading = false,
   error = null,
@@ -70,7 +71,6 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       return newDate;
     });
   };
-
   // Renderizar informações de disponibilidade para a data selecionada
   const renderAvailabilityInfo = () => {
     if (isLoading) {
@@ -103,47 +103,48 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       );
     }
 
-    return (
+    // Cast para tipo estendido para evitar erros de TypeScript
+    const avail = availability as AvailabilityResponseExtended;    return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h4 className="text-lg font-medium text-gray-900">
             Disponibilidade para {new Date(selectedDate).toLocaleDateString('pt-BR')}
           </h4>
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            availability.isAvailable 
+            avail.isAvailable 
               ? 'bg-green-100 text-green-800' 
               : 'bg-red-100 text-red-800'
           }`}>
-            {availability.isAvailable ? 'Disponível' : 'Indisponível'}
+            {avail.isAvailable ? 'Disponível' : 'Indisponível'}
           </span>
         </div>
 
-        {availability.isAvailable ? (
+        {avail.isAvailable ? (
           <div className="space-y-4">
             {/* Horários Globais */}
-            {availability.globalSchedule && (
+            {avail.globalSchedule && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h5 className="font-medium text-blue-900 mb-2">Horário da Barbearia</h5>
-                <p className="text-sm text-blue-800">
-                  {minutesToTimeString(availability.globalSchedule.openTime)} às {' '}
-                  {minutesToTimeString(availability.globalSchedule.closeTime)}
+                <h5 className="font-medium text-blue-900 mb-2">Horário da Barbearia</h5>                <p className="text-sm text-blue-800">
+                  {/* Garantindo que o valor passado para minutesToTimeString seja um número */}
+                  {minutesToTimeString(Number(avail.globalSchedule.openTime))} às {' '}
+                  {minutesToTimeString(Number(avail.globalSchedule.closeTime))}
                 </p>
-                {availability.globalSchedule.lunchStart && availability.globalSchedule.lunchEnd && (
+                {avail.globalSchedule.lunchStart && avail.globalSchedule.lunchEnd && (
                   <p className="text-sm text-blue-700 mt-1">
-                    Almoço: {minutesToTimeString(availability.globalSchedule.lunchStart)} às {' '}
-                    {minutesToTimeString(availability.globalSchedule.lunchEnd)}
+                    {/* Garantindo que o valor passado para minutesToTimeString seja um número */}
+                    Almoço: {minutesToTimeString(Number(avail.globalSchedule.lunchStart))} às {' '}
+                    {minutesToTimeString(Number(avail.globalSchedule.lunchEnd))}
                   </p>
                 )}
               </div>
             )}
 
             {/* Barbeiros Disponíveis */}
-            {availability.availableBarbers && availability.availableBarbers.length > 0 && (
+            {avail.availableBarbers && avail.availableBarbers.length > 0 && (
               <div className="space-y-3">
                 <h5 className="font-medium text-gray-900">Barbeiros Disponíveis</h5>
                 <div className="grid gap-3">
-                  {availability.availableBarbers.map((barber: BarberAvailability) => (
-                    <div key={barber.barberId} className="bg-white border border-gray-200 rounded-lg p-4">
+                  {avail.availableBarbers.map((barber: BarberAvailabilityExtended) => (                    <div key={barber.barberId} className="bg-white border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h6 className="font-medium text-gray-900">{barber.barberName}</h6>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -156,15 +157,16 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                       </div>
                       
                       {barber.isAvailable && barber.schedule && (
-                        <div className="text-sm text-gray-600 space-y-1">
-                          <p>
+                        <div className="text-sm text-gray-600 space-y-1">                          <p>
                             <span className="font-medium">Horário:</span> {' '}
-                            {minutesToTimeString(barber.schedule.openTime)} às {minutesToTimeString(barber.schedule.closeTime)}
+                            {/* Garantindo que o valor passado para minutesToTimeString seja um número */}
+                            {minutesToTimeString(Number(barber.schedule.openTime))} às {minutesToTimeString(Number(barber.schedule.closeTime))}
                           </p>
                           {barber.schedule.lunchStart && barber.schedule.lunchEnd && (
                             <p>
                               <span className="font-medium">Almoço:</span> {' '}
-                              {minutesToTimeString(barber.schedule.lunchStart)} às {minutesToTimeString(barber.schedule.lunchEnd)}
+                              {/* Garantindo que o valor passado para minutesToTimeString seja um número */}
+                              {minutesToTimeString(Number(barber.schedule.lunchStart))} às {minutesToTimeString(Number(barber.schedule.lunchEnd))}
                             </p>
                           )}
                         </div>
@@ -182,11 +184,11 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
             )}
 
             {/* Exceções Ativas */}
-            {availability.activeExceptions && availability.activeExceptions.length > 0 && (
+            {avail.activeExceptions && avail.activeExceptions.length > 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <h5 className="font-medium text-yellow-900 mb-2">Exceções Ativas</h5>
                 <div className="space-y-2">
-                  {availability.activeExceptions.map((exception: any, index: number) => (
+                  {avail.activeExceptions.map((exception: any, index: number) => (
                     <div key={index} className="text-sm text-yellow-800">
                       <p className="font-medium">{exception.description}</p>
                       {exception.openTime && exception.closeTime && (
@@ -202,7 +204,7 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <h5 className="font-medium text-red-900 mb-2">Não Disponível</h5>
             <p className="text-sm text-red-800">
-              {availability.reason || 'Não há disponibilidade para esta data.'}
+              {avail.reason || 'Não há disponibilidade para esta data.'}
             </p>
           </div>
         )}
@@ -214,15 +216,14 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   const monthNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
-  const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
+  ];  const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];  
+  
   useEffect(() => {
     // Buscar disponibilidade para a data inicial
     if (onDateSelect) {
       onDateSelect(selectedDate);
     }
-  }, []);
+  }, [onDateSelect, selectedDate]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -57,7 +57,6 @@ export class GlobalScheduleController {
       });
     }
   }
-
   static async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -70,13 +69,13 @@ export class GlobalScheduleController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Horário global recuperado com sucesso',
         data: schedule,
       });
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar horário global',
         error: error.message,
@@ -169,7 +168,6 @@ export class BarberScheduleController {
       });
     }
   }
-
   static async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -182,13 +180,13 @@ export class BarberScheduleController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Horário de barbeiro recuperado com sucesso',
         data: schedule,
       });
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar horário de barbeiro',
         error: error.message,
@@ -281,7 +279,6 @@ export class GlobalExceptionController {
       });
     }
   }
-
   static async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -294,13 +291,13 @@ export class GlobalExceptionController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Exceção global recuperada com sucesso',
         data: exception,
       });
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar exceção global',
         error: error.message,
@@ -394,7 +391,6 @@ export class BarberExceptionController {
       });
     }
   }
-
   static async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -407,13 +403,13 @@ export class BarberExceptionController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Exceção de barbeiro recuperada com sucesso',
         data: exception,
       });
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar exceção de barbeiro',
         error: error.message,
@@ -489,7 +485,6 @@ export class AvailabilityController {
       });
     }
   }
-
   static async getBarberAvailability(req: Request, res: Response) {
     try {
       const { barberId, date } = req.params;
@@ -513,13 +508,13 @@ export class AvailabilityController {
         serviceDuration ? parseInt(serviceDuration as string) : undefined
       );
       
-      res.json({
+      return res.json({
         success: true,
         message: 'Disponibilidade do barbeiro recuperada com sucesso',
         data: availability,
       });
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message || 'Erro ao buscar disponibilidade do barbeiro',
         error: error.message,

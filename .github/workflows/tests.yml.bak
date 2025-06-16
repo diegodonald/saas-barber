@@ -21,8 +21,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-    
-    - name: 🔧 Install dependencies
+          - name: 🔧 Install dependencies
       run: npm ci
       
     - name: 🧹 Lint Backend
@@ -32,10 +31,10 @@ jobs:
       run: cd frontend && npm run lint -- --config .eslintrc.cjs
       
     - name: 🔍 Type Check Backend
-      run: cd backend && npm run type-check:ci
+      run: cd backend && npm run type-check -- --project tsconfig.ci.json
       
     - name: 🔍 Type Check Frontend
-      run: cd frontend && npm run type-check:ci
+      run: cd frontend && npm run type-check -- --project tsconfig.ci.json
 
   # Job 2: Testes do Backend
   test-backend:
@@ -49,146 +48,6 @@ jobs:
           POSTGRES_DB: saas_barber_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres123
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-      
-    - name: 📦 Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
-        
-    - name: 🔧 Install dependencies
-      run: cd backend && npm ci
-      
-    - name: 🔨 Setup environment
-      run: |
-        cd backend
-        cp .env.test.example .env.test
-        
-    - name: 🔄 Setup database
-      run: |
-        cd backend
-        npx prisma migrate deploy
-      env:
-        DATABASE_URL: postgresql://postgres:postgres123@localhost:5432/saas_barber_test
-        
-    - name: 🧪 Run tests
-      run: cd backend && npm test
-      env:
-        DATABASE_URL: postgresql://postgres:postgres123@localhost:5432/saas_barber_test
-        JWT_SECRET: test_jwt_secret
-        JWT_EXPIRES_IN: 15m
-        JWT_REFRESH_SECRET: test_refresh_secret
-        JWT_REFRESH_EXPIRES_IN: 7d
-
-  # Job 3: Testes do Frontend
-  test-frontend:
-    name: 🎭 Frontend Tests
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-      
-    - name: 📦 Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-        
-    - name: 🔧 Install dependencies
-      run: cd frontend && npm ci
-      
-    - name: 🧪 Run tests
-      run: cd frontend && npm test
-      
-  # Job 4: Testes de Integração e E2E
-  test-e2e:
-    name: 🌐 E2E Tests
-    runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]
-    
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_DB: saas_barber_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres123
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-      
-    - name: 📦 Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: 🔧 Install root dependencies
-      run: npm ci
-      
-    - name: 🔧 Install backend dependencies
-      run: cd backend && npm ci
-      
-    - name: 🔧 Install frontend dependencies
-      run: cd frontend && npm ci
-      
-    - name: 🔧 Install E2E dependencies
-      run: cd e2e && npm ci
-      
-    - name: 🔨 Setup environment
-      run: |
-        cd backend
-        cp .env.test.example .env.test
-        
-    - name: 📝 Install Playwright browsers
-      run: npx playwright install --with-deps chromium
-      
-    - name: 🔄 Setup database
-      run: |
-        cd backend
-        npx prisma migrate deploy
-      env:
-        DATABASE_URL: postgresql://postgres:postgres123@localhost:5432/saas_barber_test
-        
-    - name: 🧪 Run E2E tests
-      run: npm run test:e2e
-      env:
-        DATABASE_URL: postgresql://postgres:postgres123@localhost:5432/saas_barber_test
-        VITE_API_URL: http://localhost:3000
-        JWT_SECRET: test_jwt_secret
-        JWT_EXPIRES_IN: 15m
-        JWT_REFRESH_SECRET: test_refresh_secret
-        JWT_REFRESH_EXPIRES_IN: 7d
-        
-    - name: 📊 Upload Playwright test results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 7
         options: >-
           --health-cmd pg_isready
           --health-interval 10s

@@ -27,10 +27,14 @@ export class AuthController {
           message: 'Senha não atende aos critérios de segurança',
           errors: passwordValidation.errors
         });
-      }
-
-      // Registrar usuário
-      const result = await authService.register(validatedData);
+      }      // Registrar usuário
+      const result = await authService.register({
+        email: validatedData.email,
+        password: validatedData.password,
+        name: validatedData.name,
+        phone: validatedData.phone,
+        role: validatedData.role
+      });
 
       return res.status(201).json({
         success: true,
@@ -71,10 +75,11 @@ export class AuthController {
   async login(req: Request, res: Response) {
     try {
       // Validar dados de entrada
-      const validatedData = validateSchema(loginSchema, req.body);
-
-      // Fazer login
-      const result = await authService.login(validatedData);
+      const validatedData = validateSchema(loginSchema, req.body);      // Fazer login
+      const result = await authService.login({
+        email: validatedData.email,
+        password: validatedData.password
+      });
 
       return res.json({
         success: true,

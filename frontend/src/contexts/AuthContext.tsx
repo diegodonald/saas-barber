@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 
 // Tipos para o sistema de autenticação
 export interface User {
@@ -67,8 +67,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Função de logout
+  const logout = useCallback(() => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setUser(null);
+  }, []);
+
+  // Função para renovar token
+  const refreshToken = useCallback(async (): Promise<boolean> => {
+    try {
+      const refreshTokenValue = localStorage.getItem('refreshToken');
+      
+      if (!refreshTokenValue) {
+        return false;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken: refreshTokenValue }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        logout(); // Remove tokens inválidos
+        return false;
+      }
+
+      // Atualizar tokens
+      localStorage.setItem('accessToken', data.data.accessToken);
+      localStorage.setItem('refreshToken', data.data.refreshToken);
+      
+      return true;
+    } catch (error) {
+      console.error('Erro ao renovar token:', error);
+      logout();
+      return false;
+    }
+  }, [logout]);
+
   // Utilitário para fazer requisições autenticadas
-  const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
+  const apiRequest = useCallback(async (endpoint: string, options: RequestInit = {}) => {
     const token = localStorage.getItem('accessToken');
     
     const config: RequestInit = {
@@ -97,7 +140,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     return response;
-  };
+  }, [refreshToken]);
 
   // Função de login
   const login = async (credentials: LoginCredentials): Promise<void> => {
@@ -165,49 +208,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Função de logout
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    setUser(null);
-  };
-
-  // Função para renovar token
-  const refreshToken = async (): Promise<boolean> => {
-    try {
-      const refreshTokenValue = localStorage.getItem('refreshToken');
-      
-      if (!refreshTokenValue) {
-        return false;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken: refreshTokenValue }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        logout(); // Remove tokens inválidos
-        return false;
-      }
-
-      // Atualizar tokens
-      localStorage.setItem('accessToken', data.data.accessToken);
-      localStorage.setItem('refreshToken', data.data.refreshToken);
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao renovar token:', error);
-      logout();
-      return false;
-    }
-  };
-
   // Verificar se usuário tem determinado role
   const hasRole = (role: string | string[]): boolean => {
     if (!user) return false;
@@ -267,7 +267,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     initializeAuth();
-  }, []);
+  }, [apiRequest, refreshToken, logout]);
 
   // Configurar renovação automática de token
   useEffect(() => {
@@ -279,7 +279,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }, 14 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, refreshToken]);
 
   const value: AuthContextType = {
     user,
@@ -298,4 +298,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-}; 
+};
