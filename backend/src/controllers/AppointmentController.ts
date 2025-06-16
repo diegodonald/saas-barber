@@ -26,13 +26,29 @@ const appointmentFiltersSchema = z.object({
   clientId: z.string().cuid().optional(),
   serviceId: z.string().cuid().optional(),
   status: z.nativeEnum(AppointmentStatus).optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+  startDate: z.string().datetime().optional(), // Mantido como string aqui, a conversão ocorre depois
+  endDate: z.string().datetime().optional(),   // Mantido como string aqui, a conversão ocorre depois
   skip: z.string().transform(Number).optional(),
   take: z.string().transform(Number).optional(),
   orderBy: z.enum(['startTime', 'createdAt']).optional(),
   orderDirection: z.enum(['asc', 'desc']).optional()
 });
+
+// Interface para os filtros finais após o processamento no controller
+interface ProcessedAppointmentFilters {
+  barbershopId?: string;
+  barberId?: string;
+  clientId?: string;
+  serviceId?: string;
+  status?: AppointmentStatus;
+  startDate?: Date; // Convertido para Date
+  endDate?: Date;   // Convertido para Date
+  skip?: number;
+  take?: number;
+  orderBy?: 'startTime' | 'createdAt';
+  orderDirection?: 'asc' | 'desc';
+}
+
 
 const availableSlotsSchema = z.object({
   barberId: z.string().cuid('ID do barbeiro inválido'),
@@ -86,9 +102,9 @@ export class AppointmentController {
           error: 'Permissão insuficiente para criar agendamentos'
         });
       }      const appointment = await this.appointmentService.create({
-        barbershopId: validatedData.barbershopId!,
-        barberId: validatedData.barberId!,
-        serviceId: validatedData.serviceId!,
+        barbershopId: validatedData.barbershopId,
+        barberId: validatedData.barberId,
+        serviceId: validatedData.serviceId,
         clientId,
         startTime: new Date(validatedData.startTime),
         notes: validatedData.notes
@@ -121,11 +137,23 @@ export class AppointmentController {
    */
   async findMany(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
-      const filters = appointmentFiltersSchema.parse(req.query);
+      const parsedFilters = appointmentFiltersSchema.parse(req.query);
+
+      // Inicializar finalFilters com os tipos corretos
+      const finalFilters: ProcessedAppointmentFilters = {
+        // Copiar propriedades que não precisam de conversão
+        barbershopId: parsedFilters.barbershopId,
+        barberId: parsedFilters.barberId,
+        clientId: parsedFilters.clientId,
+        serviceId: parsedFilters.serviceId,
+        status: parsedFilters.status,
+        skip: parsedFilters.skip,
+        take: parsedFilters.take,
+        orderBy: parsedFilters.orderBy,
+        orderDirection: parsedFilters.orderDirection,
+      };
 
       // Aplicar filtros baseados no role do usuário
-      const finalFilters: any = { ...filters };
-
       if (req.user.role === 'CLIENT') {
         finalFilters.clientId = req.user.userId;
       } else if (req.user.role === 'BARBER') {
@@ -136,12 +164,12 @@ export class AppointmentController {
       }
       // SUPER_ADMIN pode ver todos
 
-      // Converter strings de data para Date
-      if (finalFilters.startDate) {
-        finalFilters.startDate = new Date(finalFilters.startDate);
+      // Converter strings de data para Date e atribuir
+      if (parsedFilters.startDate) {
+        finalFilters.startDate = new Date(parsedFilters.startDate);
       }
-      if (finalFilters.endDate) {
-        finalFilters.endDate = new Date(finalFilters.endDate);
+      if (parsedFilters.endDate) {
+        finalFilters.endDate = new Date(parsedFilters.endDate);
       }
 
       const result = await this.appointmentService.findMany(finalFilters);
@@ -518,15 +546,17 @@ export class AppointmentController {
    */
   async getStats(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
-      const filters = appointmentFiltersSchema.parse(req.query);
+      const parsedFilters = appointmentFiltersSchema.parse(req.query);
 
       // Aplicar filtros baseados no role do usuário e converter tipos
-      const finalFilters: any = {
-        barbershopId: filters.barbershopId,
-        barberId: filters.barberId,
-        clientId: filters.clientId,
-        serviceId: filters.serviceId,
-        status: filters.status
+      const finalFilters: ProcessedAppointmentFilters = {
+        // Copiar propriedades que não precisam de conversão
+        barbershopId: parsedFilters.barbershopId,
+        barberId: parsedFilters.barberId,
+        clientId: parsedFilters.clientId,
+        serviceId: parsedFilters.serviceId,
+        status: parsedFilters.status,
+        // skip, take, orderBy, orderDirection não são usados em getStats, mas podem ser incluídos se necessário
       };
 
       if (req.user.role === 'CLIENT') {
@@ -540,11 +570,11 @@ export class AppointmentController {
       // SUPER_ADMIN pode ver todas as estatísticas
 
       // Converter strings de data para Date
-      if (filters.startDate) {
-        finalFilters.startDate = new Date(filters.startDate);
+      if (parsedFilters.startDate) {
+        finalFilters.startDate = new Date(parsedFilters.startDate);
       }
-      if (filters.endDate) {
-        finalFilters.endDate = new Date(filters.endDate);
+      if (parsedFilters.endDate) {
+        finalFilters.endDate = new Date(parsedFilters.endDate);
       }
 
       const stats = await this.appointmentService.getStats(finalFilters);

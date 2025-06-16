@@ -80,7 +80,7 @@ export class ServiceController {
         data: { service }
       });
     } catch (error) {
-      console.error('Erro ao criar serviço:', error);
+      // console.error('Erro ao criar serviço:', error);
       
       if (error instanceof Error) {
         if (error.message.includes('já existe')) {
@@ -157,7 +157,7 @@ export class ServiceController {
         data: result
       });
     } catch (error) {
-      console.error('Erro ao listar serviços:', error);
+      // console.error('Erro ao listar serviços:', error);
       
       res.status(500).json({
         success: false,
@@ -201,7 +201,7 @@ export class ServiceController {
         data: { service }
       });
     } catch (error) {
-      console.error('Erro ao buscar serviço:', error);
+      // console.error('Erro ao buscar serviço:', error);
       
       res.status(500).json({
         success: false,
@@ -249,7 +249,7 @@ export class ServiceController {
         data: { service }
       });
     } catch (error) {
-      console.error('Erro ao atualizar serviço:', error);
+      // console.error('Erro ao atualizar serviço:', error);
       
       if (error instanceof Error) {
         if (error.message.includes('já existe')) {
@@ -304,7 +304,7 @@ export class ServiceController {
         data: { service }
       });
     } catch (error) {
-      console.error('Erro ao desativar serviço:', error);
+      // console.error('Erro ao desativar serviço:', error);
       
       if (error instanceof Error) {
         if (error.message.includes('agendamentos futuros')) {
@@ -367,7 +367,7 @@ export class ServiceController {
         data: { service }
       });
     } catch (error) {
-      console.error('Erro ao reativar serviço:', error);
+      // console.error('Erro ao reativar serviço:', error);
       
       if (error instanceof Error) {
         if (error.message.includes('já está ativo')) {
