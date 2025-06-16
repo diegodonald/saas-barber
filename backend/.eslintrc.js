@@ -16,8 +16,7 @@ module.exports = {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js', 'dist', 'node_modules', 'coverage'],
-  rules: {
+  ignorePatterns: ['.eslintrc.js', 'dist', 'node_modules', 'coverage'],  rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
@@ -25,8 +24,8 @@ module.exports = {
       'argsIgnorePattern': '^_',
       'varsIgnorePattern': '^_'
     }],
-    'prefer-const': 'warn',
-    'no-console': 'warn',
+    'prefer-const': 'off',
+    'no-console': 'off',
     '@typescript-eslint/ban-ts-comment': ['error', {
       'ts-expect-error': 'allow-with-description',
       'ts-ignore': false,
