@@ -55,7 +55,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
     barbershopId: barbershopId || userExtended?.barbershopId,
     barberId: barberId || (hasRole('BARBER') ? user?.id : undefined),
     autoLoad: true
-  });  // @ts-ignore - Desativando verificação de tipos nesta desestruturação
+  });  // @ts-expect-error - Desativando verificação de tipos nesta desestruturação
   const {
     // Schedules
     globalSchedules,
@@ -261,14 +261,14 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>
                       <span className="font-medium">Horário:</span> {' '}
-                      {/* @ts-ignore - Ignorando erros de propriedades não existentes */}
+                      {/* @ts-expect-error - Ignorando erros de propriedades não existentes */}
                       {minutesToTimeString(extSchedule.openTime)} às {minutesToTimeString(extSchedule.closeTime)}
                     </p>
-                    {/* @ts-ignore - Ignorando erros de propriedades não existentes */}
+                    {/* @ts-expect-error - Ignorando erros de propriedades não existentes */}
                     {extSchedule.lunchStart && extSchedule.lunchEnd && (
                       <p>
                         <span className="font-medium">Almoço:</span> {' '}
-                        {/* @ts-ignore - Ignorando erros de propriedades não existentes */}
+                        {/* @ts-expect-error - Ignorando erros de propriedades não existentes */}
                         {minutesToTimeString(extSchedule.lunchStart)} às {minutesToTimeString(extSchedule.lunchEnd)}
                       </p>
                     )}
@@ -372,7 +372,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                   {exception.type !== ExceptionType.CLOSED && extException.openTime && extException.closeTime && (
                     <p>
                       <span className="font-medium">Horário:</span> {' '}
-                      {/* @ts-ignore - Ignorando erros de propriedades não existentes */}
+                      {/* @ts-expect-error - Ignorando erros de propriedades não existentes */}
                       {minutesToTimeString(extException.openTime)} às {minutesToTimeString(extException.closeTime)}
                     </p>
                   )}

@@ -68,7 +68,6 @@ test.describe('🚀 Sistema SaaS Barber - Fluxo Completo', () => {
    * 🔐 TESTE 1: Fluxo de Autenticação Completo
    */
   test('Fluxo de Autenticação: Registro → Login → Logout', async ({ page }) => {
-    console.log('🔐 Iniciando teste de autenticação completa');
 
     // === REGISTRO ===
     await page.goto('/auth/register');
@@ -101,7 +100,6 @@ test.describe('🚀 Sistema SaaS Barber - Fluxo Completo', () => {
     await expect(page).toHaveURL(/.*dashboard.*/);
     await expect(page.locator('[data-testid="user-name"]')).toContainText(testData.client.name);
 
-    console.log('✅ Fluxo de autenticação completo validado');
   });
 
   /**
@@ -235,14 +233,12 @@ test.describe('🚀 Sistema SaaS Barber - Fluxo Completo', () => {
     await expect(page.locator('[data-testid="appointment-item"]').first()).toBeVisible();
     await expect(page.locator('[data-testid="appointment-status"]').first()).toContainText('Agendado');
 
-    console.log('✅ Fluxo de agendamento validado');
   });
 
   /**
    * 🎯 TESTE 5: Gestão de Status de Agendamento (Barbeiro)
    */
   test('Gestão de Status: Confirmar → Iniciar → Finalizar → Avaliar', async ({ page }) => {
-    console.log('🎯 Iniciando teste de gestão de status');
 
     // Primeiro criar um agendamento como cliente
     await loginAs(page, 'CLIENT');
@@ -313,7 +309,6 @@ test.describe('🚀 Sistema SaaS Barber - Fluxo Completo', () => {
     
     await expect(page.locator('[data-testid="export-success"]')).toBeVisible();
 
-    console.log('✅ Dashboard e métricas validados');
   });
 
   /**
@@ -460,7 +455,6 @@ test.describe('🚀 Sistema SaaS Barber - Fluxo Completo', () => {
     await page.keyboard.press('Tab');
     await expect(page.locator(':focus')).toBeVisible();
 
-    console.log('✅ Performance e acessibilidade validados');
   });
 
   // === FUNÇÕES AUXILIARES ===

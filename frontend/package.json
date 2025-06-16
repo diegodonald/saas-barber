@@ -10,10 +10,13 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "type-check": "tsc --noEmit",
-    "type-check:ci": "tsc --noEmit -p tsconfig.ci.json"
+    "type-check:ci": "tsc --noEmit -p tsconfig.ci.json",
+    "lint:production": "eslint . --ext ts,tsx --config .eslintrc.production.cjs",
+    "lint:strict": "eslint . --ext ts,tsx --max-warnings 0"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -62,4 +65,4 @@
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
   }
-} 
+}

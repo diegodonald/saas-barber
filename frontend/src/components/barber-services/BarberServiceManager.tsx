@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useBarberServices } from '../../hooks/useBarberServices';
-import { BarberServiceManagerProps, BarberService, CreateBarberServiceData } from '../../types/barberService';
+import { BarberServiceManagerProps, BarberService } from '../../types/barberService';
 
 // Icons (você pode usar heroicons ou sua biblioteca de ícones preferida)
 const PlusIcon = () => (
@@ -147,8 +147,8 @@ const BarberServiceCard: React.FC<{
  */
 export const BarberServiceManager: React.FC<BarberServiceManagerProps> = ({
   barbershopId,
-  onServiceAssigned,
-  onServiceUpdated,
+  onServiceAssigned: _onServiceAssigned,
+  onServiceUpdated: _onServiceUpdated,
   onServiceRemoved
 }) => {
   const {
@@ -160,39 +160,19 @@ export const BarberServiceManager: React.FC<BarberServiceManagerProps> = ({
     totalPages,
     totalItems,
     filters,
-    create,
-    update,
-    remove,
+    create: _create,
+    update,    remove,
     reactivate,
     loadBarberServices,
-    setFilters,
+    setFilters: _setFilters, // Prefixo _ para indicar não utilizada
     clearFilters,
     refresh
   } = useBarberServices({
     initialFilters: barbershopId ? { search: barbershopId } : {}
   });
-
   // Estados locais para UI
-  const [showFilters, setShowFilters] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingService, setEditingService] = useState<BarberService | null>(null);
-
-  // Handlers
-  const handleCreate = async (data: CreateBarberServiceData) => {
-    const result = await create(data);
-    if (result) {
-      setShowCreateForm(false);
-      onServiceAssigned?.(result);
-    }
-  };
-
-  const handleEdit = async (id: string, data: any) => {
-    const result = await update(id, data);
-    if (result) {
-      setEditingService(null);
-      onServiceUpdated?.(result);
-    }
-  };
+  const [showFilters, setShowFilters] = useState(false);  const [_showCreateForm, _setShowCreateForm] = useState(false); // Prefixo _ para não utilizada
+  const [_editingService, _setEditingService] = useState<BarberService | null>(null); // Prefixo _ para não utilizada
 
   const handleToggleStatus = async (id: string, newStatus: boolean) => {
     if (newStatus) {
@@ -244,9 +224,8 @@ export const BarberServiceManager: React.FC<BarberServiceManagerProps> = ({
             <RefreshIcon />
             <span className="ml-2">Atualizar</span>
           </button>
-          
-          <button
-            onClick={() => setShowCreateForm(true)}
+            <button
+            onClick={() => _setShowCreateForm(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm bg-blue-600 text-sm font-medium text-white hover:bg-blue-700"
           >
             <PlusIcon />
@@ -326,11 +305,10 @@ export const BarberServiceManager: React.FC<BarberServiceManagerProps> = ({
           {/* Service List */}
           {barberServices.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {barberServices.map((barberService) => (
-                <BarberServiceCard
+              {barberServices.map((barberService) => (                <BarberServiceCard
                   key={barberService.id}
                   barberService={barberService}
-                  onEdit={setEditingService}
+                  onEdit={_setEditingService}
                   onToggleStatus={handleToggleStatus}
                   onDelete={handleDelete}
                 />

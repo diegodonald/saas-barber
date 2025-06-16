@@ -1,7 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
-import { Role } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -38,7 +37,7 @@ interface AuthResponse {
 }
 
 export class AuthService {
-  private readonly JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+  private readonly JWT_SECRET: string = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
   private readonly JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
   private readonly REFRESH_TOKEN_EXPIRES_IN = '30d';
   private readonly SALT_ROUNDS = 12;
@@ -211,20 +210,18 @@ export class AuthService {
    * Gera access token e refresh token
    */
   private generateTokens(payload: TokenPayload): { accessToken: string; refreshToken: string } {
-    // @ts-ignore - JWT.sign com secret e options sempre retorna string
-    const accessToken: string = jwt.sign(
-      payload, 
-      this.JWT_SECRET, 
-      { expiresIn: this.JWT_EXPIRES_IN }
+    // Garantir que o secret é string (como exige a tipagem do jsonwebtoken)
+    const secret: string = this.JWT_SECRET;
+    const accessToken = jwt.sign(
+      payload,
+      secret,
+      { expiresIn: this.JWT_EXPIRES_IN } as jwt.SignOptions
     );
-
-    // @ts-ignore - JWT.sign com secret e options sempre retorna string
-    const refreshToken: string = jwt.sign(
-      payload, 
-      this.JWT_SECRET, 
-      { expiresIn: this.REFRESH_TOKEN_EXPIRES_IN }
+    const refreshToken = jwt.sign(
+      payload,
+      secret,
+      { expiresIn: this.REFRESH_TOKEN_EXPIRES_IN } as jwt.SignOptions
     );
-
     return { accessToken, refreshToken };
   }
 
@@ -259,4 +256,4 @@ export class AuthService {
       errors
     };
   }
-} 
+}

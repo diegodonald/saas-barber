@@ -17,7 +17,7 @@ export class UserController {
    * GET /api/users/profile
    * Retorna perfil completo do usuário autenticado
    */
-  async getProfile(req: Request, res: Response) {
+  async getProfile(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
       
@@ -56,7 +56,7 @@ export class UserController {
    * PUT /api/users/profile
    * Atualiza dados básicos do usuário
    */
-  async updateProfile(req: Request, res: Response) {
+  async updateProfile(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
       const validatedData = validateSchema(updateUserSchema, req.body);
@@ -99,7 +99,7 @@ export class UserController {
    * PUT /api/users/client-profile
    * Atualiza perfil específico do cliente
    */
-  async updateClientProfile(req: Request, res: Response) {
+  async updateClientProfile(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
       const validatedData = validateSchema(updateClientProfileSchema, req.body) as any;
@@ -149,7 +149,7 @@ export class UserController {
    * PUT /api/users/barber-profile
    * Atualiza perfil específico do barbeiro
    */
-  async updateBarberProfile(req: Request, res: Response) {
+  async updateBarberProfile(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
       const validatedData = validateSchema(updateBarberProfileSchema, req.body);
@@ -199,7 +199,7 @@ export class UserController {
    * PUT /api/users/change-password
    * Altera senha do usuário
    */
-  async changePassword(req: Request, res: Response) {
+  async changePassword(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
       const validatedData = validateSchema(changePasswordSchema, req.body);
@@ -251,7 +251,7 @@ export class UserController {
    * GET /api/users
    * Lista usuários (apenas para SUPER_ADMIN)
    */
-  async listUsers(req: Request, res: Response) {
+  async listUsers(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
       
@@ -297,7 +297,7 @@ export class UserController {
    * GET /api/users/:id
    * Busca usuário por ID (apenas para SUPER_ADMIN e ADMIN)
    */
-  async getUserById(req: Request, res: Response) {
+  async getUserById(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
       const validatedParams = validateSchema(idSchema, req.params);
@@ -348,7 +348,7 @@ export class UserController {
    * DELETE /api/users/:id
    * Desativa usuário (apenas para SUPER_ADMIN)
    */
-  async deactivateUser(req: Request, res: Response) {
+  async deactivateUser(req: Request, res: Response): Promise<void> {
     try {
       const user = (req as any).user;
       const validatedParams = validateSchema(idSchema, req.params);

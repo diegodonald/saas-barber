@@ -6,14 +6,13 @@ import {
   CreateGlobalScheduleData,
   CreateBarberScheduleData,
   CreateGlobalExceptionData,
-  CreateBarberExceptionData,
-  UpdateGlobalScheduleData,
+  CreateBarberExceptionData,  UpdateGlobalScheduleData,
   UpdateBarberScheduleData,
   UpdateGlobalExceptionData,
   UpdateBarberExceptionData,
   ScheduleFilters,
   ExceptionFilters,
-  AvailabilityRequest,
+  // AvailabilityRequest, // Removido pois não está sendo usado
   AvailabilityResponse
 } from '../types/schedule';
 
@@ -46,36 +45,27 @@ class ApiClient {
         ...options.headers,
       },
       ...options,
-    };
-
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.data || data;
-    } catch (error) {
-      console.error(`API Error - ${endpoint}:`, error);
-      throw error;
+    };    const response = await fetch(url, config);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
+
+    const data = await response.json();
+    return data.data || data;
   }
 
   async get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET' });
-  }
-
-  async post<T>(endpoint: string, data: any): Promise<T> {
+  }  async post<T>(endpoint: string, data: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async put<T>(endpoint: string, data: any): Promise<T> {
+  async put<T>(endpoint: string, data: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -155,9 +145,8 @@ export class GlobalScheduleApiService {
       lunchStart?: string;
       lunchEnd?: string;
       workingDays?: number[];
-    } = {}
-  ): Promise<any> {
-    return apiClient.post<any>(`/admin/barbershop/${barbershopId}/setup-default-schedule`, config);
+    } = {}  ): Promise<boolean> {
+    return apiClient.post<boolean>(`/admin/barbershop/${barbershopId}/setup-default-schedule`, config);
   }
 }
 
@@ -213,9 +202,8 @@ export class BarberScheduleApiService {
 
   /**
    * Copiar horários globais para um barbeiro
-   */
-  static async copyGlobalSchedule(barberId: string): Promise<any> {
-    return apiClient.post<any>(`/admin/barber/${barberId}/copy-global-schedule`, {});
+   */  static async copyGlobalSchedule(barberId: string): Promise<boolean> {
+    return apiClient.post<boolean>(`/admin/barber/${barberId}/copy-global-schedule`, {});
   }
 }
 
@@ -394,49 +382,37 @@ export class ScheduleApiService {
 
   /**
    * Buscar todos os horários de uma barbearia (globais + individuais)
-   */
-  static async getAllSchedules(barbershopId: string) {
-    try {
-      const [globalSchedules, barberSchedules] = await Promise.all([
-        GlobalScheduleApiService.getByBarbershop(barbershopId),
-        BarberScheduleApiService.getMany({ barbershopId }),
-      ]);
+   */  static async getAllSchedules(barbershopId: string) {
+    const [globalSchedules, barberSchedules] = await Promise.all([
+      GlobalScheduleApiService.getByBarbershop(barbershopId),
+      BarberScheduleApiService.getMany({ barbershopId }),
+    ]);
 
-      return {
-        global: globalSchedules,
-        barbers: barberSchedules,
-      };
-    } catch (error) {
-      console.error('Erro ao buscar todos os horários:', error);
-      throw error;
-    }
+    return {
+      global: globalSchedules,
+      barbers: barberSchedules,
+    };
   }
 
   /**
    * Buscar todas as exceções de uma barbearia (globais + individuais)
-   */
-  static async getAllExceptions(
+   */  static async getAllExceptions(
     barbershopId: string, 
     filters?: { startDate?: string; endDate?: string }
   ) {
-    try {
-      const [globalExceptions, barberExceptions] = await Promise.all([
-        GlobalExceptionApiService.getByBarbershop(barbershopId, filters),
-        BarberExceptionApiService.getMany({ 
-          barbershopId, 
-          startDate: filters?.startDate,
-          endDate: filters?.endDate 
-        }),
-      ]);
+    const [globalExceptions, barberExceptions] = await Promise.all([
+      GlobalExceptionApiService.getByBarbershop(barbershopId, filters),
+      BarberExceptionApiService.getMany({ 
+        barbershopId, 
+        startDate: filters?.startDate,
+        endDate: filters?.endDate 
+      }),
+    ]);
 
-      return {
-        global: globalExceptions,
-        barbers: barberExceptions,
-      };
-    } catch (error) {
-      console.error('Erro ao buscar todas as exceções:', error);
-      throw error;
-    }
+    return {
+      global: globalExceptions,
+      barbers: barberExceptions,
+    };
   }
 }
 

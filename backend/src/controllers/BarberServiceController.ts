@@ -96,7 +96,7 @@ export class BarberServiceController {
       const filters = barberServiceFiltersSchema.parse(req.query);
 
       // Aplicar filtros baseados no role do usuário
-      let finalFilters = { ...filters };
+      const finalFilters = { ...filters };
 
       if (req.user.role === 'BARBER') {
         // Barbeiros só veem seus próprios serviços
@@ -346,13 +346,11 @@ export class BarberServiceController {
 
       // Para ADMINs, verificar se o barbeiro pertence à barbearia
       if (req.user.role === 'ADMIN') {
-        const barberServices = await this.barberServiceService.findServicesByBarber(barberId, false);
-        if (barberServices.length > 0 && barberServices[0].barber.barbershopId !== req.user.barbershopId) {
+        const barberServices = await this.barberServiceService.findServicesByBarber(barberId, false);        if (barberServices.length > 0 && barberServices[0].barber.barbershopId !== req.user.barbershopId) {
           return res.status(403).json({
             error: 'Você não tem permissão para acessar serviços deste barbeiro'
           });
         }
-        canAccess;
       }
 
       if (!canAccess && req.user.role !== 'ADMIN') {
@@ -389,7 +387,7 @@ export class BarberServiceController {
       // Para ADMINs, forçar filtro por barbearia
       let finalBarbershopId = barbershopId;
       if (req.user.role === 'ADMIN') {
-        finalBarbershopId = req.user.barbershopId!;
+        finalBarbershopId = req.user?.barbershopId || "";
       }
 
       const barberServices = await this.barberServiceService.findBarbersByService(serviceId, finalBarbershopId);
@@ -415,7 +413,7 @@ export class BarberServiceController {
         barbershopId = req.user.barbershopId;
       } else if (req.user.role === 'BARBER') {
         // Barbeiros só veem estatísticas da própria barbearia
-        const barberServices = await this.barberServiceService.findServicesByBarber(req.user.barberId!, false);
+        const barberServices = await this.barberServiceService.findServicesByBarber(req.user?.barberId || "", false);
         if (barberServices.length > 0) {
           barbershopId = barberServices[0].barber.barbershopId;
         }

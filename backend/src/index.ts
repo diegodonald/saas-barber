@@ -146,10 +146,10 @@ app.use('*', (req, res) => {
 // Função para inicializar o servidor
 const startServer = () => {
   app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORT}`)
-    console.log(`📊 Health check: http://localhost:${PORT}/health`)
-    console.log(`🧪 API test: http://localhost:${PORT}/api/test`)
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
+
+
+
+
   })
 }
 

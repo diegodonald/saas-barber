@@ -35,7 +35,6 @@ test.describe('🚀 Sistema SaaS Barber - Fluxos Reais', () => {
    * 🏠 TESTE 1: Página Inicial - Verificação de Estrutura
    */
   test('Página inicial deve carregar corretamente', async ({ page }) => {
-    console.log('🏠 Testando carregamento da página inicial');
 
     await page.goto('http://localhost:3000');
     
@@ -154,7 +153,6 @@ test.describe('🚀 Sistema SaaS Barber - Fluxos Reais', () => {
    * 📱 TESTE 5: Responsividade - Mobile
    */
   test('Teste de responsividade mobile', async ({ page }) => {
-    console.log('📱 Testando responsividade mobile');
 
     // Configurar viewport mobile
     await page.setViewportSize({ width: 375, height: 667 });

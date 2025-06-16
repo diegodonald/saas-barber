@@ -124,7 +124,7 @@ export class AppointmentController {
       const filters = appointmentFiltersSchema.parse(req.query);
 
       // Aplicar filtros baseados no role do usuário
-      let finalFilters: any = { ...filters };
+      const finalFilters: any = { ...filters };
 
       if (req.user.role === 'CLIENT') {
         finalFilters.clientId = req.user.userId;

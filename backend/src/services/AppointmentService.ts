@@ -48,6 +48,29 @@ export interface AppointmentStats {
   averagePrice: number;
 }
 
+// Tipos mínimos para schedules e exceptions
+interface BarberSchedule {
+  isWorking: boolean;
+  startTime: string;
+  endTime: string;
+  breakStart?: string | null;
+  breakEnd?: string | null;
+}
+interface GlobalSchedule {
+  isOpen: boolean;
+  openTime: string;
+  closeTime: string;
+  lunchStart?: string | null;
+  lunchEnd?: string | null;
+}
+interface Exception {
+  type: string;
+  specialStartTime?: string | null;
+  specialEndTime?: string | null;
+  specialOpenTime?: string | null;
+  specialCloseTime?: string | null;
+}
+
 export class AppointmentService {
   constructor(private prisma: PrismaClient) {}
 
@@ -157,7 +180,26 @@ export class AppointmentService {
   /**
    * Listar agendamentos com filtros
    */
-  async findMany(filters: AppointmentFilters = {}) {
+  async findMany(filters: {
+    barbershopId?: string;
+    barberId?: string;
+    clientId?: string;
+    serviceId?: string;
+    date?: string;
+    status?: AppointmentStatus;
+    startDate?: string | Date;
+    endDate?: string | Date;
+    page?: number;
+    limit?: number;
+    skip?: number;
+    take?: number;
+    orderBy?: string;
+    orderDirection?: string;
+  } = {}): Promise<{
+    appointments: Appointment[];
+    total: number;
+    hasMore: boolean;
+  }> {
     const {
       barbershopId,
       barberId,
@@ -179,11 +221,14 @@ export class AppointmentService {
     if (clientId) where.clientId = clientId;
     if (serviceId) where.serviceId = serviceId;
     if (status) where.status = status;
-
-    if (startDate || endDate) {
+    let parsedStartDate: Date | undefined;
+    let parsedEndDate: Date | undefined;
+    if (startDate) parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : startDate;
+    if (endDate) parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : endDate;
+    if (parsedStartDate || parsedEndDate) {
       where.startTime = {};
-      if (startDate) where.startTime.gte = startOfDay(startDate);
-      if (endDate) where.startTime.lte = endOfDay(endDate);
+      if (parsedStartDate) where.startTime.gte = startOfDay(parsedStartDate);
+      if (parsedEndDate) where.startTime.lte = endOfDay(parsedEndDate);
     }
 
     const [appointments, total] = await Promise.all([
@@ -377,7 +422,7 @@ export class AppointmentService {
     ]);
 
     // 2. Determinar horários de funcionamento (precedência: exceção individual > horário individual > exceção global > horário global)
-    let workingHours = this.getWorkingHours(barberSchedule, globalSchedule, barberExceptions, globalExceptions);
+    const workingHours = this.getWorkingHours(barberSchedule, globalSchedule, barberExceptions, globalExceptions);
     
     if (!workingHours) {
       return []; // Não está trabalhando neste dia
@@ -624,64 +669,60 @@ export class AppointmentService {
    * Determinar horários de trabalho com precedência
    */
   private getWorkingHours(
-    barberSchedule: any,
-    globalSchedule: any,
-    barberException: any,
-    globalException: any
-  ) {
+    barberSchedule: BarberSchedule | null,
+    globalSchedule: GlobalSchedule | null,
+    barberException: Exception | null,
+    globalException: Exception | null
+  ): {
+    startTime: string;
+    endTime: string;
+    breakStart: string | null;
+    breakEnd: string | null;
+  } | null {
     // Precedência: exceção individual > horário individual > exceção global > horário global
-    
-    // 1. Exceção individual (maior precedência)
     if (barberException) {
       if (barberException.type === 'CLOSED' || barberException.type === 'OFF' || barberException.type === 'VACATION') {
-        return null; // Não está trabalhando
+        return null;
       }
       if (barberException.type === 'SPECIAL_HOURS' || barberException.type === 'AVAILABLE') {
         return {
-          startTime: barberException.specialStartTime,
-          endTime: barberException.specialEndTime,
+          startTime: barberException.specialStartTime ?? '',
+          endTime: barberException.specialEndTime ?? '',
           breakStart: null,
           breakEnd: null
         };
       }
     }
-
-    // 2. Horário individual
     if (barberSchedule && barberSchedule.isWorking) {
       return {
         startTime: barberSchedule.startTime,
         endTime: barberSchedule.endTime,
-        breakStart: barberSchedule.breakStart,
-        breakEnd: barberSchedule.breakEnd
+        breakStart: barberSchedule.breakStart ?? null,
+        breakEnd: barberSchedule.breakEnd ?? null
       };
     }
-
-    // 3. Exceção global
     if (globalException) {
       if (globalException.type === 'CLOSED') {
-        return null; // Barbearia fechada
+        return null;
       }
       if (globalException.type === 'SPECIAL_HOURS') {
         return {
-          startTime: globalException.specialOpenTime,
-          endTime: globalException.specialCloseTime,
+          startTime: globalException.specialOpenTime ?? '',
+          endTime: globalException.specialCloseTime ?? '',
           breakStart: null,
           breakEnd: null
         };
       }
     }
-
-    // 4. Horário global (menor precedência)
     if (globalSchedule && globalSchedule.isOpen) {
       return {
         startTime: globalSchedule.openTime,
         endTime: globalSchedule.closeTime,
-        breakStart: globalSchedule.lunchStart,
-        breakEnd: globalSchedule.lunchEnd
+        breakStart: globalSchedule.lunchStart ?? null,
+        breakEnd: globalSchedule.lunchEnd ?? null
       };
     }
-
-    return null; // Não está trabalhando
+    return null;
   }
 
   /**

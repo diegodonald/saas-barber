@@ -138,7 +138,7 @@ export function validateSchema<T>(schema: z.ZodSchema<T>, data: unknown): T {
 
 // Middleware helper para validação de request
 export function createValidationMiddleware<T>(schema: z.ZodSchema<T>) {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
       req.validatedData = validateSchema(schema, req.body);
       next();

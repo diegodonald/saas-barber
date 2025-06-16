@@ -211,7 +211,7 @@ router.post('/admin/barbershop/:barbershopId/setup-default-schedule',
           createdSchedules.push(schedule);
         } catch (error) {
           // Ignorar erros de duplicação (horário já existe)
-          console.log(`Horário para dia ${dayOfWeek} já existe`);
+          // Horário para este dia já existe - ignorando duplicação
         }
       }
 

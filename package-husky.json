@@ -1,0 +1,31 @@
+{
+  "name": "saas-barber-husky-config",
+  "version": "1.0.0",
+  "description": "Configuração de pre-commit hooks para o projeto SaaS Barber",
+  "scripts": {
+    "prepare": "husky install",
+    "lint-staged": "lint-staged"
+  },
+  "lint-staged": {
+    "backend/src/**/*.{ts,js}": [
+      "eslint --fix --max-warnings 0",
+      "prettier --write"
+    ],
+    "frontend/src/**/*.{ts,tsx,js,jsx}": [
+      "eslint --fix --max-warnings 0", 
+      "prettier --write"
+    ],
+    "e2e/**/*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.0.2",
+    "prettier": "^3.0.3"
+  }
+}
