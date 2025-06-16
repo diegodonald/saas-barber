@@ -5,8 +5,9 @@ import morgan from 'morgan'
 import compression from 'compression'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
+import path from 'path'
 
-dotenv.config({ path: require('path').resolve(__dirname, '../../.env') })
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -14,14 +15,27 @@ const PORT = process.env.PORT || 3001
 // Middleware de segurança
 app.use(helmet())
 
-// CORS
+// CORS - Configuração completa para desenvolvimento
 app.use(cors({
   origin: [
     process.env.CORS_ORIGIN || 'http://localhost:3000',
-    'http://localhost:3003',
+    'http://localhost:3003', 
     'http://localhost:5173'
   ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With', 
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'Pragma'
+  ],
+  exposedHeaders: ['Authorization'],
+  optionsSuccessStatus: 200, // Para suporte a IE11
+  preflightContinue: false
 }))
 
 // Rate limiting
@@ -37,6 +51,19 @@ app.use('/api', limiter)
 // Middleware de parsing
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+
+// Middleware adicional para OPTIONS requests
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*')
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH')
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma')
+    res.header('Access-Control-Allow-Credentials', 'true')
+    res.sendStatus(200)
+    return
+  }
+  next()
+})
 
 // Compressão
 app.use(compression())

@@ -66,8 +66,15 @@ cd saas_barber
 
 2. **Configure as variáveis de ambiente**
 ```bash
-cp .env.example .env
-# Edite o arquivo .env com suas configurações
+# Configuração automática (Recomendado)
+.\setup-env.bat          # Windows CMD
+# ou
+.\setup-env.ps1          # PowerShell
+
+# Ou manualmente
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+# Edite os arquivos .env conforme necessário
 ```
 
 3. **Inicie o ambiente de desenvolvimento**
@@ -89,15 +96,58 @@ npm run db:seed
 
 ## 🧪 Testes
 
-### Executar todos os testes
+### Executar todos os testes (Automatizado)
 ```bash
-npm test
+# Windows (Recomendado)
+.\run-tests.bat          # CMD
+.\run-tests.ps1          # PowerShell
+
+# Com opções
+.\run-tests.ps1 -SkipE2E    # Pular testes E2E
 ```
 
-### Testes E2E com Playwright
+### Executar testes individuais
 ```bash
+# Backend
+cd backend && npm test
+
+# Frontend  
+cd frontend && npm test
+
+# E2E
 npm run test:e2e
 ```
+
+### Cobertura de testes
+```bash
+cd backend && npm run test:coverage
+cd frontend && npm run test:coverage
+```
+
+📚 **Documentação completa:** [TESTING.md](TESTING.md)
+
+## 📚 Documentação
+
+- 🧪 [Guia de Testes](TESTING.md) - Como executar e debugar testes
+- 🔄 [CI/CD](docs/CI_CD.md) - Configuração de integração contínua
+- 📋 [Sistema de Horários](docs/FASE_7_SISTEMA_HORARIOS.md) - Documentação do sistema de agendamentos
+
+## 🛠️ Scripts Disponíveis
+
+### Configuração
+- `setup-env.bat` / `setup-env.ps1` - Configurar ambiente automaticamente
+- `npm run docker:up` - Iniciar serviços Docker
+- `npm run db:migrate` - Executar migrações do banco
+
+### Desenvolvimento
+- `npm run dev` - Iniciar ambiente de desenvolvimento
+- `npm run build` - Build de produção
+- `npm run lint` - Verificar código
+
+### Testes
+- `run-tests.bat` / `run-tests.ps1` - Executar todos os testes
+- `npm run test:coverage` - Testes com cobertura
+- `npm run test:e2e` - Testes end-to-end
 
 ### Testes com cobertura
 ```bash

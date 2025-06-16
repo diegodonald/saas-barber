@@ -46,7 +46,6 @@ export function useSchedule(options: UseScheduleOptions = {}) {
   const [barberExceptions, setBarberExceptions] = useState<BarberException[]>([]);
   const [isLoadingBarberExceptions, setIsLoadingBarberExceptions] = useState(false);
   const [barberExceptionError, setBarberExceptionError] = useState<string | null>(null);
-
   // States para disponibilidade
   const [availability, setAvailability] = useState<AvailabilityResponse | null>(null);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
@@ -57,11 +56,15 @@ export function useSchedule(options: UseScheduleOptions = {}) {
     setIsLoadingGlobalSchedules(true);
     setGlobalScheduleError(null);
     try {
-      const res = await scheduleApi.globalSchedule.getMany({
+      if (!barbershopId) {
+        throw new Error('barbershopId é obrigatório para buscar horários globais');
+      }
+      
+      const schedules = await scheduleApi.globalSchedule.getByBarbershop(
         barbershopId,
-        ...filters,
-      });
-      setGlobalSchedules(res.data);
+        filters
+      );
+      setGlobalSchedules(schedules);
     } catch (err: any) {
       setGlobalScheduleError(err.message || 'Erro ao buscar horários globais');
       setGlobalSchedules([]);
@@ -98,12 +101,11 @@ export function useSchedule(options: UseScheduleOptions = {}) {
   const fetchBarberSchedules = useCallback(async (filters?: ScheduleFilters) => {
     setIsLoadingBarberSchedules(true);
     setBarberScheduleError(null);
-    try {
-      const res = await scheduleApi.barberSchedule.getMany({
+    try {      const res = await scheduleApi.barberSchedule.getMany({
         barberId,
         ...filters,
       });
-      setBarberSchedules(res.data);
+      setBarberSchedules(res);
     } catch (err: any) {
       setBarberScheduleError(err.message || 'Erro ao buscar horários de barbeiro');
       setBarberSchedules([]);
@@ -135,17 +137,15 @@ export function useSchedule(options: UseScheduleOptions = {}) {
       throw new Error(err.message || 'Erro ao deletar horário de barbeiro');
     }
   }, []);
-
   // CRUD Global Exceptions
   const fetchGlobalExceptions = useCallback(async (filters?: ExceptionFilters) => {
+    if (!barbershopId) return;
+    
     setIsLoadingGlobalExceptions(true);
     setGlobalExceptionError(null);
     try {
-      const res = await scheduleApi.globalException.getMany({
-        barbershopId,
-        ...filters,
-      });
-      setGlobalExceptions(res.data);
+      const res = await scheduleApi.globalException.getByBarbershop(barbershopId, filters);
+      setGlobalExceptions(res);
     } catch (err: any) {
       setGlobalExceptionError(err.message || 'Erro ao buscar exceções globais');
       setGlobalExceptions([]);
@@ -181,13 +181,12 @@ export function useSchedule(options: UseScheduleOptions = {}) {
   // CRUD Barber Exceptions
   const fetchBarberExceptions = useCallback(async (filters?: ExceptionFilters) => {
     setIsLoadingBarberExceptions(true);
-    setBarberExceptionError(null);
-    try {
+    setBarberExceptionError(null);    try {
       const res = await scheduleApi.barberException.getMany({
         barberId,
         ...filters,
       });
-      setBarberExceptions(res.data);
+      setBarberExceptions(res);
     } catch (err: any) {
       setBarberExceptionError(err.message || 'Erro ao buscar exceções de barbeiro');
       setBarberExceptions([]);
@@ -219,17 +218,19 @@ export function useSchedule(options: UseScheduleOptions = {}) {
       throw new Error(err.message || 'Erro ao deletar exceção de barbeiro');
     }
   }, []);
-
   // Disponibilidade
-  const checkAvailability = useCallback(async (date: string) => {
+  const checkAvailability = useCallback(async (date: string, options?: { serviceDuration?: number }) => {
     setIsLoadingAvailability(true);
     setAvailabilityError(null);
     try {
       let res: AvailabilityResponse;
       if (barberId) {
-        res = await scheduleApi.availability.getBarberAvailability(barberId, date);
+        res = await scheduleApi.availability.getByBarber(barberId, date, options?.serviceDuration);
       } else if (barbershopId) {
-        res = await scheduleApi.availability.getAvailability(barbershopId, date);
+        res = await scheduleApi.availability.getByBarbershop(barbershopId, date, {
+          barberId,
+          serviceDuration: options?.serviceDuration
+        });
       } else {
         throw new Error('É necessário informar barbershopId ou barberId');
       }

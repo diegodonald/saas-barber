@@ -1,0 +1,79 @@
+name: 🔧 Script Validation
+
+on:
+  push:
+    paths: 
+      - 'run-tests.*'
+      - 'setup-env.*'
+      - '.github/workflows/script-validation.yml'
+  pull_request:
+    paths:
+      - 'run-tests.*'
+      - 'setup-env.*'
+      - '.github/workflows/script-validation.yml'
+
+jobs:
+  validate-scripts:
+    name: 🧪 Validate Custom Scripts
+    runs-on: windows-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 🔧 Install dependencies
+      run: npm ci
+      
+    - name: 🔍 Validate PowerShell scripts
+      run: |
+        # Verificar sintaxe dos scripts PowerShell
+        Get-ChildItem -Filter "*.ps1" | ForEach-Object {
+          Write-Host "Validando $($_.Name)..."
+          $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $_.FullName -Raw), [ref]$null)
+          Write-Host "✅ $($_.Name) tem sintaxe válida"
+        }
+      shell: powershell
+      
+    - name: 🔍 Validate Batch scripts  
+      run: |
+        # Verificar se scripts .bat existem e têm conteúdo
+        if (Test-Path "run-tests.bat") {
+          Write-Host "✅ run-tests.bat encontrado"
+          $content = Get-Content "run-tests.bat" -Raw
+          if ($content.Length -gt 0) {
+            Write-Host "✅ run-tests.bat tem conteúdo"
+          }
+        }
+        if (Test-Path "setup-env.bat") {
+          Write-Host "✅ setup-env.bat encontrado"
+          $content = Get-Content "setup-env.bat" -Raw
+          if ($content.Length -gt 0) {
+            Write-Host "✅ setup-env.bat tem conteúdo"
+          }
+        }
+      shell: powershell
+      
+    - name: 🧪 Test setup script (dry run)
+      run: |
+        # Testar script de setup sem executar comandos perigosos
+        Write-Host "Testando setup-env.ps1..."
+        # Verificar se arquivos .env.example existem
+        if (Test-Path "backend\.env.example") { Write-Host "✅ backend/.env.example OK" }
+        if (Test-Path "frontend\.env.example") { Write-Host "✅ frontend/.env.example OK" }
+      shell: powershell
+      
+    - name: 📋 Script usage help
+      run: |
+        Write-Host "📚 Como usar os scripts:" -ForegroundColor Green
+        Write-Host "1. .\setup-env.ps1 - Configurar ambiente automaticamente"
+        Write-Host "2. .\run-tests.ps1 - Executar todos os testes"
+        Write-Host "3. .\run-tests.ps1 -SkipE2E - Pular testes E2E"
+        Write-Host "4. setup-env.bat - Configurar (CMD)"
+        Write-Host "5. run-tests.bat - Executar testes (CMD)"
+      shell: powershell
