@@ -16,7 +16,7 @@ module.exports = {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js', 'dist', 'node_modules', 'coverage'],
+  ignorePatterns: ['.eslintrc.js', 'dist', 'node_modules', 'coverage', 'src/tests/**/*'],
   rules: {
     // TypeScript específico - Configurações mais restritivas
     '@typescript-eslint/explicit-function-return-type': 'off',
