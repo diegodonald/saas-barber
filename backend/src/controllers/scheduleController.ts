@@ -10,7 +10,7 @@ import {
 // Helper para tratar erros desconhecidos
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
-    return getErrorMessage(error);
+    return error.message;
   }
   return String(error);
 };
