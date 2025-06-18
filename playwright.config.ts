@@ -91,12 +91,12 @@ export default defineConfig({
       },
     },
     {
-      command: 'npm run dev:test --workspace=backend',
+      command: 'npm run dev:e2e --workspace=backend',
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
       env: {
-        NODE_ENV: 'test',
+        NODE_ENV: 'e2e',
         FORCE_COLOR: '1',
       },
     },
