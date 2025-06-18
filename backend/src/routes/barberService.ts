@@ -1,9 +1,8 @@
-import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { Router } from 'express';
 import { BarberServiceController } from '../controllers/BarberServiceController';
-import { BarberServiceService } from '../services/BarberServiceService';
 import { authenticate } from '../middleware/auth';
-import { AuthenticatedRequest } from '../types/auth';
+import { BarberServiceService } from '../services/BarberServiceService';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -20,76 +19,109 @@ router.use(authenticate);
  * @desc Atribuir serviço a barbeiro
  * @access SUPER_ADMIN, ADMIN, BARBER
  */
-router.post('/', (req, res) => barberServiceController.create(req as AuthenticatedRequest, res));
+router.post(
+  '/',
+  asAuthenticatedHandler((req, res) => barberServiceController.create(req, res))
+);
 
 /**
  * @route GET /api/barber-services
  * @desc Listar atribuições com filtros
  * @access SUPER_ADMIN, ADMIN, BARBER
  */
-router.get('/', (req, res) => barberServiceController.findMany(req as AuthenticatedRequest, res));
+router.get(
+  '/',
+  asAuthenticatedHandler((req, res) => barberServiceController.findMany(req, res))
+);
 
 /**
  * @route GET /api/barber-services/stats
  * @desc Obter estatísticas de atribuições
  * @access SUPER_ADMIN, ADMIN, BARBER
  */
-router.get('/stats', (req, res) => barberServiceController.getStats(req as AuthenticatedRequest, res));
+router.get(
+  '/stats',
+  asAuthenticatedHandler((req, res) => barberServiceController.getStats(req, res))
+);
 
 /**
  * @route GET /api/barber-services/available/:serviceId
  * @desc Buscar barbeiros disponíveis para um serviço (público)
  * @access ALL AUTHENTICATED USERS
  */
-router.get('/available/:serviceId', (req, res) => barberServiceController.getAvailableBarbers(req as unknown as AuthenticatedRequest, res));
+router.get(
+  '/available/:serviceId',
+  asAuthenticatedHandler((req, res) => barberServiceController.getAvailableBarbers(req, res))
+);
 
 /**
  * @route GET /api/barber-services/check/:barberId/:serviceId
  * @desc Verificar se barbeiro pode executar serviço
  * @access ALL AUTHENTICATED USERS
  */
-router.get('/check/:barberId/:serviceId', (req, res) => barberServiceController.checkCanPerformService(req as unknown as AuthenticatedRequest, res));
+router.get(
+  '/check/:barberId/:serviceId',
+  asAuthenticatedHandler((req, res) => barberServiceController.checkCanPerformService(req, res))
+);
 
 /**
  * @route GET /api/barber-services/barber/:barberId
  * @desc Buscar serviços de um barbeiro
  * @access SUPER_ADMIN, ADMIN, BARBER (próprios serviços)
  */
-router.get('/barber/:barberId', (req, res) => barberServiceController.findServicesByBarber(req as unknown as AuthenticatedRequest, res));
+router.get(
+  '/barber/:barberId',
+  asAuthenticatedHandler((req, res) => barberServiceController.findServicesByBarber(req, res))
+);
 
 /**
  * @route GET /api/barber-services/service/:serviceId
  * @desc Buscar barbeiros que executam um serviço
  * @access SUPER_ADMIN, ADMIN
  */
-router.get('/service/:serviceId', (req, res) => barberServiceController.findBarbersByService(req as unknown as AuthenticatedRequest, res));
+router.get(
+  '/service/:serviceId',
+  asAuthenticatedHandler((req, res) => barberServiceController.findBarbersByService(req, res))
+);
 
 /**
  * @route GET /api/barber-services/:id
  * @desc Buscar atribuição por ID
  * @access SUPER_ADMIN, ADMIN, BARBER (próprias atribuições)
  */
-router.get('/:id', (req, res) => barberServiceController.findById(req as unknown as AuthenticatedRequest, res));
+router.get(
+  '/:id',
+  asAuthenticatedHandler((req, res) => barberServiceController.findById(req, res))
+);
 
 /**
  * @route PUT /api/barber-services/:id
  * @desc Atualizar atribuição
  * @access SUPER_ADMIN, ADMIN, BARBER (próprias atribuições)
  */
-router.put('/:id', (req, res) => barberServiceController.update(req as unknown as AuthenticatedRequest, res));
+router.put(
+  '/:id',
+  asAuthenticatedHandler((req, res) => barberServiceController.update(req, res))
+);
 
 /**
  * @route DELETE /api/barber-services/:id
  * @desc Remover atribuição (soft delete)
  * @access SUPER_ADMIN, ADMIN, BARBER (próprias atribuições)
  */
-router.delete('/:id', (req, res) => barberServiceController.delete(req as unknown as AuthenticatedRequest, res));
+router.delete(
+  '/:id',
+  asAuthenticatedHandler((req, res) => barberServiceController.delete(req, res))
+);
 
 /**
  * @route PATCH /api/barber-services/:id/reactivate
  * @desc Reativar atribuição
  * @access SUPER_ADMIN, ADMIN, BARBER (próprias atribuições)
  */
-router.patch('/:id/reactivate', (req, res) => barberServiceController.reactivate(req as unknown as AuthenticatedRequest, res));
+router.patch(
+  '/:id/reactivate',
+  asAuthenticatedHandler((req, res) => barberServiceController.reactivate(req, res))
+);
 
-export default router; 
+export default router;
