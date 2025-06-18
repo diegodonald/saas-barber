@@ -17,7 +17,7 @@ export default defineConfig({
   reporter: [
     ['html'],
     ['json', { outputFile: 'playwright-report/results.json' }],
-    ['junit', { outputFile: 'playwright-report/results.xml' }]
+    ['junit', { outputFile: 'playwright-report/results.xml' }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -26,16 +26,16 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    
+
     /* Take screenshot only on failures */
     screenshot: 'only-on-failure',
-    
+
     /* Record video only on failures */
     video: 'retain-on-failure',
-    
+
     /* Global timeout for each action */
     actionTimeout: 10000,
-    
+
     /* Global timeout for navigation */
     navigationTimeout: 30000,
   },
@@ -85,13 +85,21 @@ export default defineConfig({
       url: 'http://localhost:3000',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
+      env: {
+        NODE_ENV: 'test',
+        VITE_API_URL: 'http://localhost:3001',
+      },
     },
     {
-      command: 'npm run dev:backend',
+      command: 'npm run dev:test --workspace=backend',
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
-    }
+      env: {
+        NODE_ENV: 'test',
+        FORCE_COLOR: '1',
+      },
+    },
   ],
 
   /* Global setup and teardown */
@@ -106,7 +114,7 @@ export default defineConfig({
 
   /* Output directory for test results */
   outputDir: 'playwright-report/',
-  
+
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
-}); 
+});
