@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { BarberServiceController } from '../controllers/BarberServiceController';
 import { authenticate } from '../middleware/auth';
 import { BarberServiceService } from '../services/BarberServiceService';
+import { asAuthenticatedHandler } from '../types/auth';
 
 const router = Router();
 const prisma = new PrismaClient();
