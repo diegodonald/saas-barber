@@ -1,14 +1,14 @@
+import { Role } from '@prisma/client';
 import { Router } from 'express';
 import { ServiceController } from '../controllers/ServiceController';
 import { authenticate, authorize } from '../middleware/auth';
-import { Role } from '@prisma/client';
 
 const router = Router();
 const serviceController = new ServiceController();
 
 /**
  * Rotas para gestão de serviços
- * 
+ *
  * Todas as rotas requerem autenticação
  * Apenas ADMIN, BARBER e SUPER_ADMIN podem gerenciar serviços
  */
@@ -24,7 +24,11 @@ const authorizeServiceManagement = authorize([Role.ADMIN, Role.BARBER, Role.SUPE
  * @desc    Obter categorias de serviços
  * @access  Private (Admin, Barber, Super Admin)
  */
-router.get('/categories', authorizeServiceManagement, serviceController.getServiceCategories as any);
+router.get(
+  '/categories',
+  authorizeServiceManagement,
+  serviceController.getServiceCategories as any
+);
 
 /**
  * @route   GET /api/services/stats
@@ -59,20 +63,32 @@ router.get('/:id', authorizeServiceManagement, serviceController.getServiceById 
  * @desc    Atualizar serviço
  * @access  Private (Admin, Super Admin)
  */
-router.put('/:id', authorize([Role.ADMIN, Role.SUPER_ADMIN]), serviceController.updateService as any);
+router.put(
+  '/:id',
+  authorize([Role.ADMIN, Role.SUPER_ADMIN]),
+  serviceController.updateService as any
+);
 
 /**
  * @route   DELETE /api/services/:id
  * @desc    Desativar serviço
  * @access  Private (Admin, Super Admin)
  */
-router.delete('/:id', authorize([Role.ADMIN, Role.SUPER_ADMIN]), serviceController.deactivateService as any);
+router.delete(
+  '/:id',
+  authorize([Role.ADMIN, Role.SUPER_ADMIN]),
+  serviceController.deactivateService as any
+);
 
 /**
  * @route   PATCH /api/services/:id/reactivate
  * @desc    Reativar serviço
  * @access  Private (Admin, Super Admin)
  */
-router.patch('/:id/reactivate', authorize([Role.ADMIN, Role.SUPER_ADMIN]), serviceController.reactivateService as any);
+router.patch(
+  '/:id/reactivate',
+  authorize([Role.ADMIN, Role.SUPER_ADMIN]),
+  serviceController.reactivateService as any
+);
 
-export default router; 
+export default router;

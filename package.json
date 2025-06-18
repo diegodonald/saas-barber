@@ -26,7 +26,8 @@
     "test:e2e:roles": "cd e2e && npx tsc test-runner.ts --outDir . --target es2020 --module commonjs && node test-runner.js run user-roles",
     "test:e2e:flow": "cd e2e && npx tsc test-runner.ts --outDir . --target es2020 --module commonjs && node test-runner.js run e2e-flow",
     "test:e2e:all": "cd e2e && npx tsc test-runner.ts --outDir . --target es2020 --module commonjs && node test-runner.js all",
-    "test:coverage": "npm run test:coverage --workspaces",    "lint": "npm run lint --workspaces",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
     "type-check": "npm run type-check --workspaces",
     "type-check:ci": "npm run type-check:ci --workspaces",
@@ -39,12 +40,13 @@
     "docker:logs": "docker-compose logs -f",
     "setup": "npm install && npm run docker:up && npm run db:migrate && npm run db:seed",
     "clean": "npm run clean --workspaces && rm -rf node_modules playwright-report",
-    "postinstall": "playwright install"
+    "postinstall": "npx playwright install || echo 'Playwright not available, skipping install'"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
     "@types/node": "^20.10.0",
     "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "typescript": "^5.3.0"
   },
   "engines": {
@@ -76,4 +78,4 @@
     "url": "https://github.com/your-username/saas-barber/issues"
   },
   "homepage": "https://github.com/your-username/saas-barber#readme"
-} 
+}

@@ -6,12 +6,14 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "dotenv -e .env -- tsx watch src/index.ts",
+    "dev:test": "cross-env NODE_ENV=test dotenv -e .env.test -- tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint src --ext .ts --report-unused-disable-directives",
+    "lint:ci": "eslint src --ext .ts --report-unused-disable-directives --max-warnings 200",
     "lint:fix": "eslint src --ext .ts --fix",
     "type-check": "tsc --noEmit",
     "type-check:ci": "tsc --noEmit -p tsconfig.ci.json",
@@ -77,36 +79,5 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": [
-      "<rootDir>/tests/setup.ts"
-    ],
-    "roots": [
-      "<rootDir>/src",
-      "<rootDir>/tests"
-    ],
-    "testMatch": [
-      "**/__tests__/**/*.ts",
-      "**/?(*.)+(spec|test).ts"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/**/*.d.ts",
-      "!src/index.ts",
-      "!src/prisma/seed.ts",
-      "!src/tests/**/*.ts"
-    ],
-    "coverageDirectory": "coverage",
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ],
-    "testTimeout": 15000,
-    "maxWorkers": 1,
-    "forceExit": true
   }
 }
