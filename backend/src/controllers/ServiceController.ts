@@ -1,30 +1,21 @@
-import { Request, Response } from 'express';
-import { ServiceService } from '../services/ServiceService';
-import { validateSchema } from '../utils/validationSchemas';
-import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
+import { Response } from 'express';
+import { z } from 'zod';
+import { ServiceService } from '../services/ServiceService';
+import { AuthenticatedRequest } from '../types/auth';
+import { validateSchema } from '../utils/validationSchemas';
 
 const prisma = new PrismaClient();
 
-// Interface para estender o Request com dados do usuário
-interface AuthenticatedRequest extends Request {
-  user: {
-    id: string;
-    userId: string;
-    email: string;
-    role: string;
-  };
-}
-
 /**
  * Controller para gestão de serviços
- * 
+ *
  * Responsabilidades:
  * - Gerenciar requisições HTTP
  * - Validar dados de entrada
  * - Chamar services apropriados
  * - Retornar respostas padronizadas
- * 
+ *
  * Princípios aplicados:
  * - Single Responsibility: Apenas controle de requisições
  * - Dependency Inversion: Usa ServiceService
@@ -37,7 +28,7 @@ const createServiceSchema = z.object({
   duration: z.number().min(1, 'Duração deve ser maior que zero').max(480),
   price: z.number().min(0.01, 'Preço deve ser maior que zero').max(10000),
   category: z.string().max(50).optional(),
-  isActive: z.boolean().optional().default(true)
+  isActive: z.boolean().optional().default(true),
 });
 
 const updateServiceSchema = z.object({
@@ -46,7 +37,7 @@ const updateServiceSchema = z.object({
   duration: z.number().min(1).max(480).optional(),
   price: z.number().min(0.01).max(10000).optional(),
   category: z.string().max(50).optional(),
-  isActive: z.boolean().optional()
+  isActive: z.boolean().optional(),
 });
 
 export class ServiceController {
@@ -71,30 +62,30 @@ export class ServiceController {
       // Criar serviço
       const service = await this.serviceService.createService({
         ...validatedData,
-        barbershopId
+        barbershopId,
       });
 
       res.status(201).json({
         success: true,
         message: 'Serviço criado com sucesso',
-        data: { service }
+        data: { service },
       });
     } catch (error) {
       // console.error('Erro ao criar serviço:', error);
-      
+
       if (error instanceof Error) {
         if (error.message.includes('já existe')) {
           res.status(409).json({
             success: false,
-            message: error.message
+            message: error.message,
           });
           return;
         }
-        
+
         if (error.message.includes('não encontrada')) {
           res.status(404).json({
             success: false,
-            message: error.message
+            message: error.message,
           });
           return;
         }
@@ -102,7 +93,7 @@ export class ServiceController {
 
       res.status(500).json({
         success: false,
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   };
@@ -127,7 +118,7 @@ export class ServiceController {
         page = '1',
         limit = '10',
         sortBy = 'name',
-        sortOrder = 'asc'
+        sortOrder = 'asc',
       } = req.query;
 
       // Construir filtros
@@ -138,14 +129,14 @@ export class ServiceController {
         ...(minPrice && { minPrice: parseFloat(minPrice as string) }),
         ...(maxPrice && { maxPrice: parseFloat(maxPrice as string) }),
         ...(minDuration && { minDuration: parseInt(minDuration as string) }),
-        ...(maxDuration && { maxDuration: parseInt(maxDuration as string) })
+        ...(maxDuration && { maxDuration: parseInt(maxDuration as string) }),
       };
 
       const pagination = {
         page: parseInt(page as string),
         limit: parseInt(limit as string),
         sortBy: sortBy as 'name' | 'price' | 'duration' | 'createdAt',
-        sortOrder: sortOrder as 'asc' | 'desc'
+        sortOrder: sortOrder as 'asc' | 'desc',
       };
 
       // Buscar serviços
@@ -154,14 +145,14 @@ export class ServiceController {
       res.json({
         success: true,
         message: 'Serviços listados com sucesso',
-        data: result
+        data: result,
       });
     } catch (error) {
       // console.error('Erro ao listar serviços:', error);
-      
+
       res.status(500).json({
         success: false,
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   };
@@ -180,7 +171,7 @@ export class ServiceController {
       if (!service) {
         res.status(404).json({
           success: false,
-          message: 'Serviço não encontrado'
+          message: 'Serviço não encontrado',
         });
         return;
       }
@@ -190,7 +181,7 @@ export class ServiceController {
       if (service.barbershopId !== barbershopId) {
         res.status(403).json({
           success: false,
-          message: 'Acesso negado'
+          message: 'Acesso negado',
         });
         return;
       }
@@ -198,14 +189,14 @@ export class ServiceController {
       res.json({
         success: true,
         message: 'Serviço encontrado',
-        data: { service }
+        data: { service },
       });
     } catch (error) {
       // console.error('Erro ao buscar serviço:', error);
-      
+
       res.status(500).json({
         success: false,
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   };
@@ -226,7 +217,7 @@ export class ServiceController {
       if (!existingService) {
         res.status(404).json({
           success: false,
-          message: 'Serviço não encontrado'
+          message: 'Serviço não encontrado',
         });
         return;
       }
@@ -235,7 +226,7 @@ export class ServiceController {
       if (existingService.barbershopId !== barbershopId) {
         res.status(403).json({
           success: false,
-          message: 'Acesso negado'
+          message: 'Acesso negado',
         });
         return;
       }
@@ -246,16 +237,16 @@ export class ServiceController {
       res.json({
         success: true,
         message: 'Serviço atualizado com sucesso',
-        data: { service }
+        data: { service },
       });
     } catch (error) {
       // console.error('Erro ao atualizar serviço:', error);
-      
+
       if (error instanceof Error) {
         if (error.message.includes('já existe')) {
           res.status(409).json({
             success: false,
-            message: error.message
+            message: error.message,
           });
           return;
         }
@@ -263,7 +254,7 @@ export class ServiceController {
 
       res.status(500).json({
         success: false,
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   };
@@ -281,7 +272,7 @@ export class ServiceController {
       if (!existingService) {
         res.status(404).json({
           success: false,
-          message: 'Serviço não encontrado'
+          message: 'Serviço não encontrado',
         });
         return;
       }
@@ -290,7 +281,7 @@ export class ServiceController {
       if (existingService.barbershopId !== barbershopId) {
         res.status(403).json({
           success: false,
-          message: 'Acesso negado'
+          message: 'Acesso negado',
         });
         return;
       }
@@ -301,24 +292,24 @@ export class ServiceController {
       res.json({
         success: true,
         message: 'Serviço desativado com sucesso',
-        data: { service }
+        data: { service },
       });
     } catch (error) {
       // console.error('Erro ao desativar serviço:', error);
-      
+
       if (error instanceof Error) {
         if (error.message.includes('agendamentos futuros')) {
           res.status(400).json({
             success: false,
-            message: error.message
+            message: error.message,
           });
           return;
         }
-        
+
         if (error.message.includes('já está desativado')) {
           res.status(400).json({
             success: false,
-            message: error.message
+            message: error.message,
           });
           return;
         }
@@ -326,7 +317,7 @@ export class ServiceController {
 
       res.status(500).json({
         success: false,
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   };
@@ -344,7 +335,7 @@ export class ServiceController {
       if (!existingService) {
         res.status(404).json({
           success: false,
-          message: 'Serviço não encontrado'
+          message: 'Serviço não encontrado',
         });
         return;
       }
@@ -353,7 +344,7 @@ export class ServiceController {
       if (existingService.barbershopId !== barbershopId) {
         res.status(403).json({
           success: false,
-          message: 'Acesso negado'
+          message: 'Acesso negado',
         });
         return;
       }
@@ -364,16 +355,16 @@ export class ServiceController {
       res.json({
         success: true,
         message: 'Serviço reativado com sucesso',
-        data: { service }
+        data: { service },
       });
     } catch (error) {
       // console.error('Erro ao reativar serviço:', error);
-      
+
       if (error instanceof Error) {
         if (error.message.includes('já está ativo')) {
           res.status(400).json({
             success: false,
-            message: error.message
+            message: error.message,
           });
           return;
         }
@@ -381,7 +372,7 @@ export class ServiceController {
 
       res.status(500).json({
         success: false,
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   };
@@ -401,14 +392,14 @@ export class ServiceController {
       res.json({
         success: true,
         message: 'Categorias listadas com sucesso',
-        data: { categories }
+        data: { categories },
       });
     } catch (error) {
       console.error('Erro ao listar categorias:', error);
-      
+
       res.status(500).json({
         success: false,
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   };
@@ -428,21 +419,21 @@ export class ServiceController {
       res.json({
         success: true,
         message: 'Estatísticas obtidas com sucesso',
-        data: { stats }
+        data: { stats },
       });
     } catch (error) {
       console.error('Erro ao obter estatísticas:', error);
-      
+
       res.status(500).json({
         success: false,
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   };
 
   /**
    * Obter barbershopId do usuário autenticado
-   * 
+   *
    * Princípio DRY: Centraliza lógica reutilizada
    */
   private async getBarbershopId(userId: string): Promise<string> {
@@ -452,10 +443,10 @@ export class ServiceController {
         barbershop: true,
         barberProfile: {
           include: {
-            barbershop: true
-          }
-        }
-      }
+            barbershop: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -474,4 +465,4 @@ export class ServiceController {
 
     throw new Error('Usuário não está associado a uma barbearia');
   }
-} 
+}
