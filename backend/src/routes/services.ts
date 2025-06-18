@@ -2,7 +2,6 @@ import { Role } from '@prisma/client';
 import { Router } from 'express';
 import { ServiceController } from '../controllers/ServiceController';
 import { authenticate, authorize } from '../middleware/auth';
-import { asAuthenticatedHandler } from '../types/auth';
 
 const router = Router();
 const serviceController = new ServiceController();
@@ -28,7 +27,7 @@ const authorizeServiceManagement = authorize([Role.ADMIN, Role.BARBER, Role.SUPE
 router.get(
   '/categories',
   authorizeServiceManagement,
-  asAuthenticatedHandler(serviceController.getServiceCategories)
+  serviceController.getServiceCategories as any
 );
 
 /**
@@ -36,40 +35,28 @@ router.get(
  * @desc    Obter estatísticas de serviços
  * @access  Private (Admin, Barber, Super Admin)
  */
-router.get(
-  '/stats',
-  authorizeServiceManagement,
-  asAuthenticatedHandler(serviceController.getServiceStats)
-);
+router.get('/stats', authorizeServiceManagement, serviceController.getServiceStats as any);
 
 /**
  * @route   POST /api/services
  * @desc    Criar novo serviço
  * @access  Private (Admin, Super Admin)
  */
-router.post(
-  '/',
-  authorize([Role.ADMIN, Role.SUPER_ADMIN]),
-  asAuthenticatedHandler(serviceController.createService)
-);
+router.post('/', authorize([Role.ADMIN, Role.SUPER_ADMIN]), serviceController.createService as any);
 
 /**
  * @route   GET /api/services
  * @desc    Listar serviços com filtros
  * @access  Private (Admin, Barber, Super Admin)
  */
-router.get('/', authorizeServiceManagement, asAuthenticatedHandler(serviceController.getServices));
+router.get('/', authorizeServiceManagement, serviceController.getServices as any);
 
 /**
  * @route   GET /api/services/:id
  * @desc    Buscar serviço por ID
  * @access  Private (Admin, Barber, Super Admin)
  */
-router.get(
-  '/:id',
-  authorizeServiceManagement,
-  asAuthenticatedHandler(serviceController.getServiceById)
-);
+router.get('/:id', authorizeServiceManagement, serviceController.getServiceById as any);
 
 /**
  * @route   PUT /api/services/:id
@@ -79,7 +66,7 @@ router.get(
 router.put(
   '/:id',
   authorize([Role.ADMIN, Role.SUPER_ADMIN]),
-  asAuthenticatedHandler(serviceController.updateService)
+  serviceController.updateService as any
 );
 
 /**
@@ -90,7 +77,7 @@ router.put(
 router.delete(
   '/:id',
   authorize([Role.ADMIN, Role.SUPER_ADMIN]),
-  asAuthenticatedHandler(serviceController.deactivateService)
+  serviceController.deactivateService as any
 );
 
 /**
@@ -101,7 +88,7 @@ router.delete(
 router.patch(
   '/:id/reactivate',
   authorize([Role.ADMIN, Role.SUPER_ADMIN]),
-  asAuthenticatedHandler(serviceController.reactivateService)
+  serviceController.reactivateService as any
 );
 
 export default router;
