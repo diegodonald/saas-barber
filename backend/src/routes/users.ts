@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/UserController';
 import { authenticate, requireSelfOrAdmin, requireSuperAdmin } from '../middleware/auth';
+import { asAuthenticatedHandler } from '../types/auth';
 
 const router = Router();
 const userController = new UserController();

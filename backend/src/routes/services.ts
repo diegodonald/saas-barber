@@ -2,6 +2,7 @@ import { Role } from '@prisma/client';
 import { Router } from 'express';
 import { ServiceController } from '../controllers/ServiceController';
 import { authenticate, authorize } from '../middleware/auth';
+import { asAuthenticatedHandler } from '../types/auth';
 
 const router = Router();
 const serviceController = new ServiceController();
