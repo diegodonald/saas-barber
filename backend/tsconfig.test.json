@@ -3,9 +3,13 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "types": [
-      "node"
+      "node",
+      "jest"
     ],
-    "noEmit": true
+    "noEmit": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/**/*"
