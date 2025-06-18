@@ -1,6 +1,6 @@
+import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient, Role } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -21,6 +21,8 @@ interface TokenPayload {
   userId: string;
   email: string;
   role: Role;
+  barbershopId?: string;
+  barberId?: string;
 }
 
 interface AuthResponse {
@@ -37,7 +39,8 @@ interface AuthResponse {
 }
 
 export class AuthService {
-  private readonly JWT_SECRET: string = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+  private readonly JWT_SECRET: string =
+    process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
   private readonly JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
   private readonly REFRESH_TOKEN_EXPIRES_IN = '30d';
   private readonly SALT_ROUNDS = 12;
@@ -50,7 +53,7 @@ export class AuthService {
 
     // Verificar se o usuário já existe
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
     });
 
     if (existingUser) {
@@ -67,24 +70,26 @@ export class AuthService {
         password: hashedPassword,
         name,
         phone,
-        role
-      }
+        role,
+      },
     });
 
     // Criar perfil específico baseado no role
     if (role === Role.CLIENT) {
       await prisma.client.create({
         data: {
-          userId: user.id
-        }
+          userId: user.id,
+        },
       });
     }
 
-    // Gerar tokens
+    // Gerar tokens (sem barbershopId/barberId para novos usuários)
     const { accessToken, refreshToken } = this.generateTokens({
       userId: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      barbershopId: undefined,
+      barberId: undefined,
     });
 
     return {
@@ -94,10 +99,10 @@ export class AuthService {
         name: user.name,
         role: user.role,
         phone: user.phone || undefined,
-        avatar: user.avatar || undefined
+        avatar: user.avatar || undefined,
       },
       accessToken,
-      refreshToken
+      refreshToken,
     };
   }
 
@@ -107,9 +112,13 @@ export class AuthService {
   async login(data: LoginData): Promise<AuthResponse> {
     const { email, password } = data;
 
-    // Buscar usuário
+    // Buscar usuário com relacionamentos
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
+      include: {
+        barberProfile: true,
+        barbershop: true,
+      },
     });
 
     if (!user) {
@@ -122,11 +131,13 @@ export class AuthService {
       throw new Error('Credenciais inválidas');
     }
 
-    // Gerar tokens
+    // Gerar tokens com informações adicionais
     const { accessToken, refreshToken } = this.generateTokens({
       userId: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      barbershopId: user.barberProfile?.barbershopId ?? user.barbershop?.id,
+      barberId: user.barberProfile?.id,
     });
 
     return {
@@ -136,10 +147,10 @@ export class AuthService {
         name: user.name,
         role: user.role,
         phone: user.phone || undefined,
-        avatar: user.avatar || undefined
+        avatar: user.avatar || undefined,
       },
       accessToken,
-      refreshToken
+      refreshToken,
     };
   }
 
@@ -149,21 +160,27 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       const decoded = jwt.verify(refreshToken, this.JWT_SECRET) as TokenPayload;
-      
-      // Verificar se o usuário ainda existe
+
+      // Verificar se o usuário ainda existe com relacionamentos
       const user = await prisma.user.findUnique({
-        where: { id: decoded.userId }
+        where: { id: decoded.userId },
+        include: {
+          barberProfile: true,
+          barbershop: true,
+        },
       });
 
       if (!user) {
         throw new Error('Usuário não encontrado');
       }
 
-      // Gerar novos tokens
+      // Gerar novos tokens com informações adicionais
       return this.generateTokens({
         userId: user.id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        barbershopId: user.barberProfile?.barbershopId ?? user.barbershop?.id,
+        barberId: user.barberProfile?.id,
       });
     } catch (error) {
       throw new Error('Refresh token inválido');
@@ -176,10 +193,10 @@ export class AuthService {
   async verifyToken(token: string): Promise<TokenPayload> {
     try {
       const decoded = jwt.verify(token, this.JWT_SECRET) as TokenPayload;
-      
+
       // Verificar se o usuário ainda existe
       const user = await prisma.user.findUnique({
-        where: { id: decoded.userId }
+        where: { id: decoded.userId },
       });
 
       if (!user) {
@@ -212,16 +229,12 @@ export class AuthService {
   private generateTokens(payload: TokenPayload): { accessToken: string; refreshToken: string } {
     // Garantir que o secret é string (como exige a tipagem do jsonwebtoken)
     const secret: string = this.JWT_SECRET;
-    const accessToken = jwt.sign(
-      payload,
-      secret,
-      { expiresIn: this.JWT_EXPIRES_IN } as jwt.SignOptions
-    );
-    const refreshToken = jwt.sign(
-      payload,
-      secret,
-      { expiresIn: this.REFRESH_TOKEN_EXPIRES_IN } as jwt.SignOptions
-    );
+    const accessToken = jwt.sign(payload, secret, {
+      expiresIn: this.JWT_EXPIRES_IN,
+    } as jwt.SignOptions);
+    const refreshToken = jwt.sign(payload, secret, {
+      expiresIn: this.REFRESH_TOKEN_EXPIRES_IN,
+    } as jwt.SignOptions);
     return { accessToken, refreshToken };
   }
 
@@ -253,7 +266,7 @@ export class AuthService {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }

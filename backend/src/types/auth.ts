@@ -1,10 +1,11 @@
 import { Role } from '@prisma/client';
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 
 /**
  * Interface para usuário autenticado no token JWT
  */
 export interface JWTUser {
+  id: string; // Alias para userId para compatibilidade
   userId: string;
   email: string;
   role: Role;
@@ -34,8 +35,8 @@ export type AuthenticatedRequestHandler = (
  * Helper para converter handlers autenticados para o tipo que o Express espera
  * Resolve problemas de compatibilidade de tipos entre AuthenticatedRequest e Request
  */
-export const asAuthenticatedHandler = (handler: AuthenticatedRequestHandler) => {
-  return handler as any; // Type assertion para compatibilidade com Express
+export const asAuthenticatedHandler = (handler: AuthenticatedRequestHandler): RequestHandler => {
+  return handler as any as RequestHandler;
 };
 
 /**

@@ -10,7 +10,7 @@ const authService = new AuthService();
  * Verifica se o usuário está autenticado via JWT
  */
 export const authenticate = async (
-  req: AuthenticatedRequest,
+  req: any, // Usando any para compatibilidade com Express Router
   res: Response,
   next: NextFunction
 ) => {
@@ -41,6 +41,7 @@ export const authenticate = async (
 
     // Adicionar dados do usuário ao request
     req.user = {
+      id: decoded.userId, // Alias para compatibilidade
       userId: decoded.userId,
       email: decoded.email,
       role: decoded.role,
@@ -71,7 +72,7 @@ export const authenticate = async (
  * Verifica se o usuário tem permissão para acessar o recurso
  */
 export const authorize = (allowedRoles: Role[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return (req: any, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
 
@@ -107,7 +108,7 @@ export const authorize = (allowedRoles: Role[]) => {
  * ou tem permissões administrativas
  */
 export const authorizeOwnerOrAdmin = (getUserIdFromParams: (req: Request) => string) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return (req: any, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
 
@@ -147,7 +148,7 @@ export const authorizeOwnerOrAdmin = (getUserIdFromParams: (req: Request) => str
  * Middleware para verificar se o usuário pertence à mesma barbearia
  */
 export const authorizeSameBarbershop = (_getBarbershopIdFromParams: (req: Request) => string) => {
-  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return async (req: any, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
 
@@ -194,7 +195,7 @@ export const authorizeSameBarbershop = (_getBarbershopIdFromParams: (req: Reques
  * Não bloqueia se não houver token, mas adiciona dados do usuário se houver
  */
 export const optionalAuthenticate = async (
-  req: AuthenticatedRequest,
+  req: any, // Usando any para compatibilidade com Express Router
   _res: Response,
   next: NextFunction
 ) => {
@@ -215,6 +216,7 @@ export const optionalAuthenticate = async (
     try {
       const decoded = await authService.verifyToken(token);
       req.user = {
+        id: decoded.userId, // Alias para compatibilidade
         userId: decoded.userId,
         email: decoded.email,
         role: decoded.role,
