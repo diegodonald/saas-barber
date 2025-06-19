@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware de segurança
 app.use(helmet());
 
-// CORS - Configuração completa para desenvolvimento
+// CORS - Configuração para desenvolvimento
 app.use(
   cors({
     origin: [
@@ -42,7 +42,7 @@ app.use(
       'Pragma',
     ],
     exposedHeaders: ['Authorization'],
-    optionsSuccessStatus: 200, // Para suporte a IE11
+    optionsSuccessStatus: 200,
     preflightContinue: false,
   })
 );
