@@ -23,13 +23,16 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 
 // CORS - Configuração para desenvolvimento
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000'];
+
+const allOrigins = [...corsOrigins, 'http://localhost:3003', 'http://localhost:5173'];
+
+console.log('🔧 Configurando CORS com origens:', allOrigins);
 app.use(
   cors({
-    origin: [
-      process.env.CORS_ORIGIN || 'http://localhost:3000',
-      'http://localhost:3003',
-      'http://localhost:5173',
-    ],
+    origin: allOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: [
@@ -46,6 +49,7 @@ app.use(
     preflightContinue: false,
   })
 );
+console.log('✅ CORS configurado');
 
 // Rate limiting (desabilitado em ambiente de teste)
 const isTestEnvironment = process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'e2e';
