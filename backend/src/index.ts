@@ -8,7 +8,8 @@ import morgan from 'morgan';
 import path from 'path';
 
 // Carregar arquivo .env apropriado baseado no NODE_ENV
-const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+const envFile =
+  process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'e2e' ? '.env.test' : '.env';
 dotenv.config({ path: path.resolve(__dirname, `../${envFile}`) });
 
 // Log da configuração para debug
@@ -21,7 +22,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware de segurança
 app.use(helmet());
 
-// CORS - Configuração completa para desenvolvimento
+// CORS - Configuração para desenvolvimento
 app.use(
   cors({
     origin: [
@@ -47,7 +48,7 @@ app.use(
 );
 
 // Rate limiting (desabilitado em ambiente de teste)
-const isTestEnvironment = process.env.NODE_ENV === 'test';
+const isTestEnvironment = process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'e2e';
 console.log(`🔧 NODE_ENV atual: ${process.env.NODE_ENV}`);
 console.log(`🧪 É ambiente de teste: ${isTestEnvironment}`);
 
@@ -89,7 +90,7 @@ app.use((req, res, next) => {
 app.use(compression());
 
 // Logging
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'e2e') {
   app.use(morgan('combined'));
 }
 
@@ -111,11 +112,15 @@ app.use('/api/schedules', scheduleRoutes);
 
 // Health check
 app.get('/health', (_req, res) => {
+  // Para testes E2E, retornar 'test' como ambiente
+  const environment =
+    process.env.NODE_ENV === 'e2e' ? 'test' : process.env.NODE_ENV || 'development';
+
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
+    environment,
     version: '1.0.0',
   });
 });
@@ -188,7 +193,7 @@ const startServer = () => {
 };
 
 // Iniciar servidor (sempre, exceto em testes unitários)
-const shouldStartServer = process.env.NODE_ENV !== 'unit-test';
+const shouldStartServer = process.env.NODE_ENV !== 'test';
 if (shouldStartServer) {
   startServer();
 }

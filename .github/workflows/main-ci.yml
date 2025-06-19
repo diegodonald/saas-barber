@@ -265,7 +265,11 @@ jobs:
         run: npm ci
         
       - name: 🏗️ Build backend
-        run: cd backend && npm ci && npm run build
+        run: |
+          cd backend
+          npm ci
+          npx prisma generate
+          npm run build
         
       - name: 🏗️ Build frontend
         run: cd frontend && npm ci && npm run build
@@ -301,7 +305,7 @@ jobs:
       - name: 🏗️ Build for staging
         run: |
           npm ci
-          cd backend && npm ci && npm run build
+          cd backend && npm ci && npx prisma generate && npm run build
           cd ../frontend && npm ci && npm run build
 
       - name: 📦 Archive staging artifacts

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth, LoginCredentials } from '../../contexts/AuthContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LoginCredentials, useAuth } from '../../contexts/AuthContext';
 
 export const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState<LoginCredentials>({
     email: '',
-    password: ''
+    password: '',
   });
   const [errors, setErrors] = useState<Partial<LoginCredentials>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,14 +45,14 @@ export const LoginPage: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Limpar erro do campo quando usuário começar a digitar
     if (errors[name as keyof LoginCredentials]) {
       setErrors(prev => ({
         ...prev,
-        [name]: ''
+        [name]: '',
       }));
     }
 
@@ -108,10 +108,7 @@ export const LoginPage: React.FC = () => {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Ou{' '}
-            <Link
-              to="/register"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
+            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
               crie uma nova conta
             </Link>
           </p>
@@ -124,11 +121,7 @@ export const LoginPage: React.FC = () => {
             <div className="rounded-md bg-red-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg
-                    className="h-5 w-5 text-red-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
+                  <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -137,9 +130,7 @@ export const LoginPage: React.FC = () => {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    {apiError}
-                  </h3>
+                  <h3 className="text-sm font-medium text-red-800">{apiError}</h3>
                 </div>
               </div>
             </div>
@@ -158,6 +149,7 @@ export const LoginPage: React.FC = () => {
                   type="email"
                   autoComplete="email"
                   required
+                  data-testid="email-input"
                   value={formData.email}
                   onChange={handleInputChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
@@ -165,9 +157,7 @@ export const LoginPage: React.FC = () => {
                   } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                   placeholder="Digite seu email"
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
+                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
               </div>
             </div>
 
@@ -183,6 +173,7 @@ export const LoginPage: React.FC = () => {
                   type="password"
                   autoComplete="current-password"
                   required
+                  data-testid="password-input"
                   value={formData.password}
                   onChange={handleInputChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
@@ -190,9 +181,7 @@ export const LoginPage: React.FC = () => {
                   } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                   placeholder="Digite sua senha"
                 />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                )}
+                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
               </div>
             </div>
           </div>
@@ -212,10 +201,7 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div className="text-sm">
-              <Link
-                to="/forgot-password"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
+              <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                 Esqueceu a senha?
               </Link>
             </div>
@@ -226,6 +212,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
+              data-testid="login-button"
               className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
                 isSubmitting
                   ? 'bg-gray-400 cursor-not-allowed'
@@ -264,4 +251,4 @@ export const LoginPage: React.FC = () => {
       </div>
     </div>
   );
-}; 
+};
