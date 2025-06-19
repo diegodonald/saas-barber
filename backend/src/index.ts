@@ -42,7 +42,7 @@ app.use(
       'Pragma',
     ],
     exposedHeaders: ['Authorization'],
-    optionsSuccessStatus: 200,
+    optionsSuccessStatus: 200, // Para suporte a IE11
     preflightContinue: false,
   })
 );
